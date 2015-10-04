@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Mickey2">
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+	<property name="versionNumber" value="953" />
+
+	<property name="jarname" value="Mickey${versionNumber}.jar" description="" />
+	<property name="dropboxjarname" value="DropboxRemote${versionNumber}.jar" description="" />
+
+	<property name="dropbox" location="${user.home}/Dropbox" />
+
+
+	<target name="create_run_jar">
+		<jar destfile="${jarname}">
+			<manifest>
+				<attribute name="Main-Class" value="com.horowitz.mickey.Launcher" />
+				<attribute name="Class-Path" value=". lib/commons-lang-2.1.jar lib/json-simple-1.1.1.jar lib/gson-2.3.jar lib/commons-io-2.4.jar lib/Catalano.Image.jar lib/Catalano.Core.jar lib/Catalano.Math.jar lib/Catalano.Statistics.jar" />
+			</manifest>
+			<fileset dir="bin" />
+		</jar>
+
+    <property name="subfolder" value="lib" />
+		<property name="home_subfolder" value="home" />
+		<property name="home_subfolder2" value="home2" />
+		<property name="office_subfolder" value="office" />
+		<property name="office2_subfolder" value="office2" />
+		<property name="programs_subfolder" value="programs" />
+
+		<foreach list="${office_subfolder},${office2_subfolder}" param="subfolder" target="copy" />
+		<!-- from list => ,${office_subfolder},${programs_subfolder} -->
+
+	</target>
+
+	<target name="create_dropbox_remote_jar">
+		<jar destfile="${dropboxjarname}">
+			<manifest>
+				<attribute name="Main-Class" value="com.horowitz.mickey.DropboxRemote" />
+			</manifest>
+			<fileset dir="bin">
+			  <include name="**/DropboxRemote*.class"/>
+			  <include name="**/Service*.class"/>
+			  <include name="**/DateUtils*.class"/>
+			  <include name="**/MyImageIO.class"/>
+			  <include name="**/MouseRobot.class"/>
+			  <include name="**/RobotInter*.class"/>
+			</fileset>
+		</jar>
+
+		<property name="home_subfolder" value="home" />
+		<property name="home_subfolder2" value="home2" />
+		<property name="office_subfolder" value="office" />
+		<property name="office2_subfolder" value="office2" />
+		<property name="programs_subfolder" value="programs" />
+
+		<foreach list="${office_subfolder},${office2_subfolder}" param="subfolder" target="copyDropboxRemote" />
+		<!-- from list => ,${office_subfolder},${programs_subfolder} -->
+
+	</target>
+
+	<target name="copy">
+		<mkdir dir="${dropbox}/${subfolder}" />
+		<copy todir="${dropbox}/${subfolder}" file="${jarname}" />
+		<mkdir dir="${dropbox}/${subfolder}/lib" />
+		<copy file="lib/commons-lang-2.1.jar" todir="${dropbox}/${subfolder}/lib" />
+		<copy file="lib/json-simple-1.1.1.jar" todir="${dropbox}/${subfolder}/lib" />
+		<copy file="lib/gson-2.3.jar" todir="${dropbox}/${subfolder}/lib" />
+		<copy file="lib/commons-io-2.4.jar" todir="${dropbox}/${subfolder}/lib" />
+
+		
+		<copy todir="${dropbox}/${subfolder}/lib">
+			<fileset dir="lib" includes="**" />
+			
+		</copy>
+
+	</target>
+	
+	<target name="copyDropboxRemote">
+		<mkdir dir="${dropbox}/${subfolder}" />
+		<copy todir="${dropbox}/${subfolder}" file="${dropboxjarname}" />
+	</target>
+	
+</project>
