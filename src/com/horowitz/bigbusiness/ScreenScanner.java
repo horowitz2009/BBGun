@@ -53,6 +53,8 @@ public class ScreenScanner {
 
   private Map<String, ImageData> _imageDataCache;
   private Pixel _safePoint;
+	private Rectangle _labelArea;
+	private int _labelWidth;
 
   public ScreenScanner(Settings settings) {
     _settings = settings;
@@ -73,7 +75,40 @@ public class ScreenScanner {
 
   }
 
-  public Rectangle getScanArea() {
+  private void setKeyAreas() throws IOException {
+	
+	  _fullyOptimized = true;
+	  Rectangle area;	  
+	  int xx; int yy;
+	
+	  _scanArea = new Rectangle(_tl.x + 327, _tl.y, getGameWidth() - 327 - 360, getGameHeight());
+	  
+	  //label area
+	  _labelWidth = 380;
+	  xx = (getGameWidth() - _labelWidth) / 2;
+	  _labelArea = new Rectangle(_tl.x + xx, _tl.y + 71, _labelWidth, 46);
+	  
+	  _safePoint = new Pixel(0, _tl.y + getGameHeight() / 2);
+	
+	  // HOORAY
+	  xx = (getGameWidth() - 580) / 2;
+	  yy = (getGameHeight() - 453) / 2;
+	  xx += _tl.x;
+	  yy += _tl.y;
+	  area = new Rectangle(xx + 194, yy + 397, 192, 39);
+	
+	  _hooray = new ImageData("Hooray.bmp", area, _comparator, 23, 6);
+	
+	  getImageData("tags/zzz.bmp", _scanArea, 0, 7);
+	  getImageData("tags/coins.bmp", _scanArea, 0, 9);
+	  getImageData("tags/houses.bmp", _scanArea, 0, 9);
+	  getImageData("tags/fire.bmp", _scanArea, 0, 7);
+	  getImageData("tags/medical.bmp", _scanArea, 14, 9);
+	  getImageData("tags/greenDown.bmp", _scanArea, 18, -37);
+	
+	}
+
+	public Rectangle getScanArea() {
     return _scanArea;
   }
 
@@ -82,6 +117,9 @@ public class ScreenScanner {
   }
 
   public ImageData getImageData(String filename, Rectangle defaultArea, int xOff, int yOff) throws IOException {
+  	if (!new File(filename).exists())
+  		return null;
+  	
     if (_imageDataCache.containsKey(filename)) {
       return _imageDataCache.get(filename);
     } else {
@@ -315,36 +353,12 @@ public class ScreenScanner {
     return _comparator;
   }
 
-  private void setKeyAreas() throws IOException {
-
-    _fullyOptimized = true;
-
-    int xx = (getGameWidth() - 780) / 2;
-    int yy = (getGameHeight() - 585) / 2;
-    Rectangle area = new Rectangle(_tl.x + xx + 53, _tl.y + yy + 22, 171, 24);
-
-    _scanArea = new Rectangle(_tl.x + 327, _tl.y, getGameWidth() - 327 - 360, getGameHeight());
-    _safePoint = new Pixel(0, _tl.y + getGameHeight() / 2);
-
-    // HOORAY
-    xx = (getGameWidth() - 580) / 2;
-    yy = (getGameHeight() - 453) / 2;
-    xx += _tl.x;
-    yy += _tl.y;
-    area = new Rectangle(xx + 194, yy + 397, 192, 39);
-
-    _hooray = new ImageData("Hooray.bmp", area, _comparator, 23, 6);
-
-    getImageData("tags/zzz.bmp", _scanArea, 0, 0);
-    getImageData("tags/coins.bmp", _scanArea, 0, 9);
-    getImageData("tags/houses.bmp", _scanArea, 0, 9);
-    getImageData("tags/fire.bmp", _scanArea, 15, 9);
-    getImageData("tags/medical.bmp", _scanArea, 15, 9);
-
-  }
-
   public Pixel getSafePoint() {
     return _safePoint;
   }
+
+	public Rectangle getLabelArea() {
+		return _labelArea;
+	}
 
 }
