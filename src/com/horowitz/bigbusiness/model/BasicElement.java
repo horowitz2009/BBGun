@@ -1,8 +1,13 @@
 package com.horowitz.bigbusiness.model;
 
+import java.io.Serializable;
+
 import com.horowitz.commons.ImageData;
 
-public class BasicElement {
+public class BasicElement implements Cloneable, Serializable {
+
+	private static final long serialVersionUID = -1189852183233999384L;
+	
 	private String _name;
 
 	public BasicElement(String name) {
@@ -35,6 +40,16 @@ public class BasicElement {
 
 	public void setPictureImage(ImageData pictureImage) {
 		_pictureImage = pictureImage;
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		// !!!!!!!!!!!!!!!!
+		// _labelImage and _pictureImage refs will not be cloned
+		// This is what I want (for now)
+		// //////////////////////////////////////////////////////
+
+		return super.clone();
 	}
 
 }

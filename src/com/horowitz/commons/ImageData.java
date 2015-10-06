@@ -7,6 +7,7 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -16,9 +17,11 @@ import com.horowitz.mickey.ImageManager;
 import com.horowitz.mickey.Pixel;
 import com.horowitz.mickey.common.MyImageIO;
 
-public class ImageData {
+public class ImageData implements Serializable {
 
-  private String                _filename;
+  private static final long serialVersionUID = 1665414091139220640L;
+  
+	private String                _filename;
   private String                _name;
 
   private Map<Integer, Color[]> _colors;

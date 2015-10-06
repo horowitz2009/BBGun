@@ -6,6 +6,7 @@
 package com.horowitz.mickey;
 
 import java.awt.Point;
+import java.io.Serializable;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -15,13 +16,15 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * 
  * @author zhristov
  */
-public class Pixel implements Comparable<Pixel> {
+public class Pixel implements Comparable<Pixel>, Cloneable, Serializable {
 
-	public int	weight	= 0;
+  private static final long serialVersionUID = -5887402026506046524L;
 
-	public int	x;
+	public int weight = 0;
 
-	public int	y;
+	public int x;
+
+	public int y;
 
 	public Pixel(Point p) {
 		this(p.x, p.y);
@@ -59,7 +62,8 @@ public class Pixel implements Comparable<Pixel> {
 
 	@Override
 	public int compareTo(Pixel o) {
-		return new CompareToBuilder().append(weight, o.weight).append(y, o.y).append(x, o.x).toComparison();
+		return new CompareToBuilder().append(weight, o.weight).append(y, o.y)
+		    .append(x, o.x).toComparison();
 	}
 
 	public boolean equals(final Object other) {
@@ -70,8 +74,8 @@ public class Pixel implements Comparable<Pixel> {
 			return false;
 		}
 		Pixel castOther = (Pixel) other;
-		return new EqualsBuilder().append(weight, castOther.weight).append(x, castOther.x).append(y, castOther.y)
-		        .isEquals();
+		return new EqualsBuilder().append(weight, castOther.weight)
+		    .append(x, castOther.x).append(y, castOther.y).isEquals();
 	}
 
 	public String toString() {
@@ -79,6 +83,12 @@ public class Pixel implements Comparable<Pixel> {
 	}
 
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(weight).append(x).append(y).toHashCode();
+		return new HashCodeBuilder(17, 37).append(weight).append(x).append(y)
+		    .toHashCode();
+	}
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
 	}
 }

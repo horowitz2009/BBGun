@@ -132,4 +132,12 @@ public class TemplateMatcher {
 
   }
 
+	public double getSimilarityThreshold() {
+		return similarityThreshold;
+	}
+
+	public void setSimilarityThreshold(double similarityThreshold) {
+		this.similarityThreshold = similarityThreshold;
+	}
+
 }

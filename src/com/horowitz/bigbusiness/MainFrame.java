@@ -19,7 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -52,6 +54,8 @@ import com.horowitz.mickey.RobotInterruptedException;
 
 public class MainFrame extends JFrame {
 
+	private static final long serialVersionUID = -4827959393249146870L;
+
 	private final static Logger LOGGER = Logger.getLogger(MainFrame.class
 	    .getName());
 
@@ -72,7 +76,10 @@ public class MainFrame extends JFrame {
 	private ProductionProtocol _protocol;
 
 	private List<Contract> _contracts;
-	private List<Building> _buildings;
+	private Map<String, Building> _buildings;
+	private List<Building> _buildingLocations;
+
+	private TemplateMatcher _matcher;
 
 	public static void main(String[] args) {
 
@@ -110,13 +117,15 @@ public class MainFrame extends JFrame {
 			createLabelImageData(milk);
 
 			_contracts = new ArrayList<Contract>();
-			_buildings = new ArrayList<Building>();
+			_buildings = new Hashtable<String, Building>();
+			_buildingLocations = new ArrayList<Building>(20);
 
 			_protocol.addEntry(milk, 1, 0, 100);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		_matcher = new TemplateMatcher();
 	}
 
 	private void createLabelImageData(BasicElement element) throws IOException {
@@ -126,9 +135,9 @@ public class MainFrame extends JFrame {
 
 	private void createPictureImageData(BasicElement element, String folder)
 	    throws IOException {
-		element.setPictureImage(_scanner.getImageData(
-		    folder + "/" + element.getName() + ".bmp", _scanner.getLabelArea(), 0,
-		    0));
+		element
+		    .setPictureImage(_scanner.getImageData(folder + "/" + element.getName()
+		        + ".bmp", _scanner.getScanArea(), 0, 0));
 	}
 
 	private void init() throws AWTException {
@@ -199,8 +208,25 @@ public class MainFrame extends JFrame {
 				new Thread(new Runnable() {
 					public void run() {
 						try {
+
 							_scanner.getImageData(filename);
-							scanOne(filename, true);
+							Pixel p = scanOne(filename, true);
+							if (p != null) {
+								LOGGER.info("found it: " + p);
+							} else {
+								LOGGER.info(filename + " not found");
+								LOGGER.info("trying with redused threshold");
+								double old = _matcher.getSimilarityThreshold();
+								_matcher.setSimilarityThreshold(0.91d);
+								p = scanOne(filename, true);
+								if (p != null) {
+									LOGGER.info("found it: " + p);
+								} else {
+									LOGGER.info(filename + " not found");
+								}
+								_matcher.setSimilarityThreshold(old);
+
+							}
 						} catch (RobotInterruptedException e) {
 							LOGGER.log(Level.WARNING, e.getMessage());
 							e.printStackTrace();
@@ -361,7 +387,9 @@ public class MainFrame extends JFrame {
 								if (_scanner.isOptimized()) {
 
 									// scanCoins();
+									LOGGER.info("Scan for coins...");
 									scanMany("tags/coins.bmp", true);
+									LOGGER.info("Done");
 
 								} else {
 									LOGGER.info("I need to know where the game is!");
@@ -399,12 +427,16 @@ public class MainFrame extends JFrame {
 								}
 
 								if (_scanner.isOptimized()) {
-
-									if (!scanMany("tags/houses.bmp", true).isEmpty())
+									LOGGER.info("Scan for houses...");
+									if (!scanMany("tags/houses.bmp", true).isEmpty()) {
 										_mouse.delay(200);
+									}
 									_mouse.savePosition();
 									_mouse.click(_scanner.getSafePoint());
+									_mouse.delay(100);
+									_mouse.click(_scanner.getSafePoint());
 									_mouse.restorePosition();
+									LOGGER.info("Done.");
 
 								} else {
 									LOGGER.info("I need to know where the game is!");
@@ -652,8 +684,7 @@ public class MainFrame extends JFrame {
 
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		TemplateMatcher matcher = new TemplateMatcher();
-		List<Pixel> matches = matcher.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
@@ -675,27 +706,26 @@ public class MainFrame extends JFrame {
 		ImageData imageData = _scanner.getImageData(filename);
 		if (imageData == null)
 			return new ArrayList<Pixel>(0);
-		LOGGER.info("Click " + imageData.getName());
-		_mouse.savePosition();
-
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		TemplateMatcher matcher = new TemplateMatcher();
-		List<Pixel> matches = matcher.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
 
 			// filter similar
 			if (matches.size() > 1) {
-				for (int i = 0; i < matches.size() - 1; i++) {
-					Pixel p1 = matches.get(i);
-					Pixel p2 = matches.get(i + 1);
-					if (Math.abs(p1.x - p2.x) <= 3 || Math.abs(p1.y - p2.y) <= 3) {
-						// too close to each other
-						// remove one
-						matches.remove(i);
-						i--;
+				for (int i = matches.size() - 1;i > 0; --i) {
+					for (int j = i - 1; j >= 0; --j) {
+						Pixel p1 = matches.get(i);
+						Pixel p2 = matches.get(j);
+						if (Math.abs(p1.x - p2.x) <= 3
+						    && Math.abs(p1.y - p2.y) <= 3) {
+							// too close to each other
+							// remove one
+							matches.remove(j);
+							--i;
+						}
 					}
 				}
 			}
@@ -707,8 +737,6 @@ public class MainFrame extends JFrame {
 					_mouse.click(pixel.x, pixel.y);
 			}
 		}
-		_mouse.restorePosition();
-		LOGGER.info("Done!");
 		return matches;
 	}
 
@@ -717,8 +745,7 @@ public class MainFrame extends JFrame {
 		ImageData imageData = _scanner.getImageData(filename);
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		TemplateMatcher matcher = new TemplateMatcher();
-		List<Pixel> matches = matcher.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
@@ -748,11 +775,8 @@ public class MainFrame extends JFrame {
 		if (imageData == null)
 			return null;
 
-		LOGGER.info("Scan " + imageData.getName());
-
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		TemplateMatcher matcher = new TemplateMatcher();
-		Pixel pixel = matcher.findMatch(imageData.getImage(), screen);
+		Pixel pixel = _matcher.findMatch(imageData.getImage(), screen);
 		if (pixel != null) {
 			pixel.x += (area.x + imageData.get_xOff());
 			pixel.y += (area.y + imageData.get_yOff());
@@ -761,46 +785,91 @@ public class MainFrame extends JFrame {
 				_mouse.click(pixel.x, pixel.y);
 				_mouse.delay(100);
 			}
-		} else {
-			LOGGER.info("Sorry!");
 		}
-		LOGGER.info("Done!");
 		return pixel;
+	}
+
+	private void registerBuilding(String buildingName) {
+		try {
+			Building building = new Building(buildingName);
+			createLabelImageData(building);
+			createPictureImageData(building, "buildings");
+			_buildings.put(buildingName, building);
+		} catch (IOException e) {
+			LOGGER.warning("Failed to register " + buildingName);
+			e.printStackTrace();
+		}
+
+	}
+
+	private Building getBuilding(String name) {
+		for (Building b : _buildingLocations) {
+			if (b.getName().equals(name)) {
+				return b;
+			}
+		}
+		return null;
 	}
 
 	private void locateKeyBuildings() {
 		// TODO Auto-generated method stub
 		try {
+			LOGGER.info("Locating buildings. Please wait!");
+
+			registerBuilding("Warehouse");
+			registerBuilding("Terminal");
+			registerBuilding("Ranch");
 			Pixel p = null;
 
-			// p = scanOne("buildings/warehouse.bmp", false);
-			if (p != null)
-				LOGGER.info("found warehouse" + p);
+			if (false) {
+				// first warehouse(s)
+				// FIREFOX AND CHROME paint differently the warehouse. Reducing the
+				// threshold.
+				double oldThreshold = _matcher.getSimilarityThreshold();
+				_matcher.setSimilarityThreshold(.91d);
+				List<Pixel> warehouses = scanMany("buildings/Warehouse.bmp", false);
+				if (!warehouses.isEmpty()) {
+					LOGGER.info("Found at least one warehouse ");
+					// presume one is enough
+					Building warehouse = _buildings.get("Warehouse").copy();
+					warehouse.setPosition(warehouses.get(0));
+					_buildingLocations.add(warehouse);
+				}
+				// restore the threshold
+				_matcher.setSimilarityThreshold(oldThreshold);
+			}
+			// //next the Terminal(s)
+			// List<Pixel> terminals = scanMany("buildings/Terminal.bmp", false);
+			// if (!terminals.isEmpty()) {
+			// LOGGER.info("Found at least one terminal ");
+			// // presume one is enough
+			// Building terminal = _buildings.get("Terminal").copy();
+			// terminal.setPosition(terminals.get(0));
+			// _buildingLocations.add(terminal);
+			// p = terminal.getPosition();
+			// }
 
-			// p = scanOne("buildings/terminal.bmp", false);
-			if (p != null)
-				LOGGER.info("found terminal: " + p);
 			List<Pixel> greens = scanMany("tags/greenDown.bmp", false);
 			LOGGER.info("greens: " + greens.size());
-			if (p != null) {
-				for (int i = 0; i < greens.size(); i++) {
-					Pixel pixel = greens.get(i);
-					LOGGER.info("" + pixel);
-					int x = pixel.x - 2 - 20;
-					int y = pixel.y + 24 - 6;
-					if (closerToEachOther(p, new Pixel(x, y), 5)) {
-						greens.remove(i);
-						LOGGER.info("This one is removed: " + pixel);
-						break;// TODO one terminal for the moment (and this will be long
-						      // moment)
-					}
-				}
-			}
+			// if (p != null) {
+			// for (int i = 0; i < greens.size(); i++) {
+			// Pixel pixel = greens.get(i);
+			// LOGGER.info("" + pixel);
+			// int x = pixel.x - 2 - 20;
+			// int y = pixel.y + 24 - 6;
+			// if (closerToEachOther(p, new Pixel(x, y), 5)) {
+			// greens.remove(i);
+			// LOGGER.info("This one is removed: " + pixel);
+			// break;// TODO one terminal for the moment (and this will be long
+			// // moment)
+			// }
+			// }
+			// }
 			List<Pixel> idles = scanMany("tags/zzz.bmp", false);
-
-			greens.addAll(idles);
-
 			LOGGER.info("idles: " + idles.size());
+
+			// merge them all
+			greens.addAll(idles);
 
 			// ranch
 			for (int i = 0; i < greens.size(); i++) {
@@ -810,37 +879,26 @@ public class MainFrame extends JFrame {
 				Pixel pp = scanOne("buildings/Ranch.bmp", area, false);
 				if (pp != null) {
 					LOGGER.info("Ranch:" + pp);
-					break;
 				}
-
-			}
-			// terminal
-			for (int i = 0; i < greens.size(); i++) {
-				p = greens.get(i);
-				LOGGER.info("" + p);
-				Rectangle area = new Rectangle(p.x - 27, p.y + 38, 70, 28);
-				Pixel pp = scanOne("buildings/terminal.bmp", area, false);
+				pp = scanOne("buildings/Terminal.bmp", area, false);
 				if (pp != null) {
-					LOGGER.info("Ranch:" + pp);
-					break;
+					LOGGER.info("Terminal:" + pp);
 				}
 
 			}
-
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (AWTException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (RobotInterruptedException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private boolean closerToEachOther(Pixel p1, Pixel p2, int distance) {
-		return (Math.abs(p1.x - p2.x) <= distance || Math.abs(p1.y - p2.y) <= distance);
+		return (Math.abs(p1.x - p2.x) <= distance && Math.abs(p1.y - p2.y) <= distance);
 	}
 
 	private void stopMagic() {
