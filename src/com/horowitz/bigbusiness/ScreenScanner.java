@@ -117,14 +117,22 @@ public class ScreenScanner {
   }
 
   public ImageData getImageData(String filename, Rectangle defaultArea, int xOff, int yOff) throws IOException {
-  	if (!new File(filename).exists())
-  		return null;
+  	//if (!new File(filename).exists())
+  	//	return null;
+  	
   	
     if (_imageDataCache.containsKey(filename)) {
       return _imageDataCache.get(filename);
     } else {
-      ImageData imageData = new ImageData(filename, defaultArea, _comparator, xOff, yOff);
-      _imageDataCache.put(filename, imageData);
+    	ImageData imageData = null;
+    	try {
+        imageData = new ImageData(filename, defaultArea, _comparator, xOff, yOff);
+    	} catch(IOException e) {
+    		System.err.println(e);
+    		return null;
+    	}
+    	if (imageData != null)
+        _imageDataCache.put(filename, imageData);
       return imageData;
     }
   }

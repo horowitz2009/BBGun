@@ -673,6 +673,8 @@ public class MainFrame extends JFrame {
 	private List<Pixel> scanMany(String filename, boolean click)
 	    throws RobotInterruptedException, IOException, AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
+		if (imageData == null)
+			return new ArrayList<Pixel>(0);
 		LOGGER.info("Click " + imageData.getName());
 		_mouse.savePosition();
 
@@ -733,6 +735,9 @@ public class MainFrame extends JFrame {
 	private Pixel scanOne(String filename, boolean click)
 	    throws RobotInterruptedException, IOException, AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
+		if (imageData == null)
+			return null;
+
 		Rectangle area = imageData.getDefaultArea();
 		return scanOne(filename, area, click);
 	}
@@ -740,6 +745,9 @@ public class MainFrame extends JFrame {
 	private Pixel scanOne(String filename, Rectangle area, boolean click)
 	    throws RobotInterruptedException, IOException, AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
+		if (imageData == null)
+			return null;
+
 		LOGGER.info("Scan " + imageData.getName());
 
 		BufferedImage screen = new Robot().createScreenCapture(area);
