@@ -1,0 +1,107 @@
+[
+  {
+    "_position": {
+      "weight": 0,
+      "x": 759,
+      "y": 443
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -402,
+      "y": -31
+    },
+    "_name": "Terminal",
+    "_labelImage": {
+      "_filename": "labels/Terminal.bmp",
+      "_defaultArea": {
+        "x": 502,
+        "y": 402,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    },
+    "_pictureImage": {
+      "_filename": "buildings/Terminal.bmp",
+      "_defaultArea": {
+        "x": 327,
+        "y": 331,
+        "width": 698,
+        "height": 601
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 476,
+      "y": 501
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -119,
+      "y": -89
+    },
+    "_name": "Ranch",
+    "_labelImage": {
+      "_filename": "labels/Ranch.bmp",
+      "_defaultArea": {
+        "x": 502,
+        "y": 402,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    },
+    "_pictureImage": {
+      "_filename": "buildings/Ranch.bmp",
+      "_defaultArea": {
+        "x": 327,
+        "y": 331,
+        "width": 698,
+        "height": 601
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 622,
+      "y": 448
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -265,
+      "y": -36
+    },
+    "_name": "Warehouse",
+    "_labelImage": {
+      "_filename": "labels/Warehouse.bmp",
+      "_defaultArea": {
+        "x": 502,
+        "y": 402,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    },
+    "_pictureImage": {
+      "_filename": "buildings/Warehouse.bmp",
+      "_defaultArea": {
+        "x": 327,
+        "y": 331,
+        "width": 698,
+        "height": 601
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  }
+]

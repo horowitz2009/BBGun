@@ -432,4 +432,8 @@ public class ScreenScanner {
 		return _labelArea;
 	}
 
+  public ImageComparator getImageComparator() {
+    return _comparator;
+  }
+
 }

@@ -20,40 +20,43 @@ import com.horowitz.mickey.common.MyImageIO;
 public class ImageData implements Serializable {
 
   private static final long serialVersionUID = 1665414091139220640L;
-  
-	private String                _filename;
-  private String                _name;
 
-  private Map<Integer, Color[]> _colors;
-  private Pixel[]               _mask;
-  private Rectangle             _defaultArea;
+  private String _filename;
+  private String _name;
 
-  private Robot                 _robot;
+  private transient Map<Integer, Color[]> _colors;
+  private transient Pixel[] _mask;
+  private Rectangle _defaultArea;
 
-  private BufferedImage         _image;
-  private ImageComparator       _comparator;
-  private int                   _xOff;
+  private transient BufferedImage _image;
+  private transient ImageComparator _comparator;
+  private int _xOff;
 
-  private int                   _yOff;
+  private int _yOff;
 
-  public ImageData(String filename, Rectangle defaultArea, ImageComparator comparator, int xOff, int yOff) throws IOException {
+  public ImageData(String filename, Rectangle defaultArea, ImageComparator comparator, int xOff, int yOff)
+      throws IOException {
     super();
     this._filename = filename;
     this._defaultArea = defaultArea;
     this._comparator = comparator;
 
+    loadImage(filename);
+
+    _xOff = xOff;
+    _yOff = yOff;
+  }
+
+  private void loadImage(String filename) throws IOException {
     _image = ImageIO.read(ImageManager.getImageURL(filename));
     ImageMask imageMask = new ImageMask(filename);
     _mask = imageMask.getMask();
     _colors = imageMask.getColors();
+  }
 
-    _xOff = xOff;
-    _yOff = yOff;
-    try {
-      _robot = new Robot();
-    } catch (AWTException e) {
-      e.printStackTrace();
-    }
+  public void postDeserialize(Object[] transientObjects) throws Exception {
+    _comparator = (ImageComparator) transientObjects[0];
+    loadImage(_filename);
   }
 
   public Pixel findImage() {
@@ -74,7 +77,7 @@ public class ImageData implements Serializable {
     }
     return null;
   }
-  
+
   private void writeImage(BufferedImage image, int n) {
     if (false)
       try {
@@ -84,14 +87,19 @@ public class ImageData implements Serializable {
       }
   }
 
-
   public Pixel findImage(Rectangle areaIn) {
     Rectangle area = areaIn != null ? areaIn : _defaultArea;
-    BufferedImage screen = _robot.createScreenCapture(area);
-    Pixel p = findImage(screen);
-    if (p != null) {
-      p.x = p.x + area.x;
-      p.y = p.y + area.y;
+    Pixel p = null;
+
+    try {
+      BufferedImage screen = new Robot().createScreenCapture(area);
+      p = findImage(screen);
+      if (p != null) {
+        p.x = p.x + area.x;
+        p.y = p.y + area.y;
+      }
+    } catch (AWTException e) {
+      e.printStackTrace();
     }
     return p;
   }
@@ -115,12 +123,12 @@ public class ImageData implements Serializable {
   public String getName() {
     if (_name == null) {
       _name = _filename.substring(0, _filename.length() - 4);
-      String [] ss= _name.split("/");
+      String[] ss = _name.split("/");
       _name = ss[ss.length - 1];
     }
     return _name;
   }
-  
+
   public void setName(String _name) {
     this._name = _name;
   }
@@ -128,7 +136,7 @@ public class ImageData implements Serializable {
   public Rectangle getDefaultArea() {
     return _defaultArea;
   }
-  
+
   public void setDefaultArea(Rectangle _defaultArea) {
     this._defaultArea = _defaultArea;
   }
@@ -143,6 +151,14 @@ public class ImageData implements Serializable {
 
   public Pixel[] getMask() {
     return _mask;
+  }
+
+  public ImageComparator getComparator() {
+    return _comparator;
+  }
+
+  public void setComparator(ImageComparator comparator) {
+    _comparator = comparator;
   }
 
 }
