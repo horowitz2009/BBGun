@@ -54,8 +54,11 @@ public class ScreenScanner {
 
 	private Map<String, ImageData> _imageDataCache;
 	private Pixel _safePoint;
+	private Pixel _parkingPoint;
 	private Rectangle _labelArea;
 	private Rectangle _popupArea;
+	private Rectangle _productionArea3;
+	private Rectangle _productionArea2;
 	private int _labelWidth;
 
 	public ScreenScanner(Settings settings) {
@@ -98,7 +101,15 @@ public class ScreenScanner {
 		//_popupArea = new Rectangle(_tl.x + xx, _tl.y + 122, 608, 392);
 		_popupArea = new Rectangle(_tl.x + xx + 416, _tl.y + 122 + 42, 132, 139);
 
+		xx = (getGameWidth() - 924) / 2;
+		yy = (getGameHeight() - 450) / 2;
+		//_popupArea = new Rectangle(_tl.x + xx, _tl.y + 122, 608, 392);
+		_productionArea3 = new Rectangle(_tl.x + xx, _tl.y+yy, 924, 450);
+		
+		
+		
 		_safePoint = new Pixel(0, _tl.y + getGameHeight() / 2);
+		_parkingPoint = new Pixel(_safePoint);
 
 		// HOORAY
 		xx = (getGameWidth() - 580) / 2;
@@ -116,6 +127,18 @@ public class ScreenScanner {
 		getImageData("tags/medical.bmp", _scanArea, 14, 9);
 		getImageData("tags/greenDown.bmp", _scanArea, 18, -37);
 
+	}
+
+	public Pixel getParkingPoint() {
+		return _parkingPoint;
+	}
+
+	public Rectangle getProductionArea3() {
+		return _productionArea3;
+	}
+
+	public Rectangle getProductionArea2() {
+		return _productionArea2;
 	}
 
 	public Rectangle getScanArea() {

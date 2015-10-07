@@ -57,8 +57,7 @@ public class MainFrame extends JFrame {
 
 	private static final long serialVersionUID = -4827959393249146870L;
 
-	private final static Logger LOGGER = Logger.getLogger(MainFrame.class
-			.getName());
+	private final static Logger LOGGER = Logger.getLogger(MainFrame.class.getName());
 
 	private static final String APP_TITLE = "BB Gun v0.001";
 
@@ -88,8 +87,7 @@ public class MainFrame extends JFrame {
 			MainFrame frame = new MainFrame();
 
 			frame.pack();
-			frame.setSize(new Dimension(frame.getSize().width + 8, frame
-					.getSize().height + 8));
+			frame.setSize(new Dimension(frame.getSize().width + 8, frame.getSize().height + 8));
 
 			frame.setLocationRelativeTo(null);
 
@@ -104,42 +102,20 @@ public class MainFrame extends JFrame {
 		setupLogger();
 		init();
 
-		_protocol = new ProductionProtocol();
+		_contracts = new ArrayList<Contract>();
+		_buildings = new Hashtable<String, Building>();
+		_buildingLocations = new ArrayList<Building>(20);
 
-		Building ranch = new Building("Ranch");
-		try {
-			createLabelImageData(ranch);
-			createPictureImageData(ranch, "buildings");
-
-			Product milk = new Product("Milk");
-			milk.setPosition(1);
-			milk.setTime(2);
-			milk.setBuilding(ranch);
-			createLabelImageData(milk);
-
-			_contracts = new ArrayList<Contract>();
-			_buildings = new Hashtable<String, Building>();
-			_buildingLocations = new ArrayList<Building>(20);
-
-			_protocol.addEntry(milk, 1, 0, 100);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		_matcher = new TemplateMatcher();
 	}
 
 	private void createLabelImageData(BasicElement element) throws IOException {
-		element.setLabelImage(_scanner.getImageData(
-				"labels/" + element.getName() + ".bmp",
-				_scanner.getLabelArea(), 0, 0));
+		element.setLabelImage(_scanner.getImageData("labels/" + element.getName() + ".bmp", _scanner.getLabelArea(), 0, 0));
 	}
 
-	private void createPictureImageData(BasicElement element, String folder)
-			throws IOException {
-		element.setPictureImage(_scanner.getImageData(
-				folder + "/" + element.getName() + ".bmp",
-				_scanner.getScanArea(), 0, 0));
+	private void createPictureImageData(BasicElement element, String folder) throws IOException {
+		element.setPictureImage(_scanner.getImageData(folder + "/" + element.getName() + ".bmp", _scanner.getScanArea(), 0,
+		    0));
 	}
 
 	private void init() throws AWTException {
@@ -169,8 +145,7 @@ public class MainFrame extends JFrame {
 				}
 				outputConsole.append(record.getMessage());
 				outputConsole.append("\n");
-				outputConsole.setCaretPosition(outputConsole.getDocument()
-						.getLength());
+				outputConsole.setCaretPosition(outputConsole.getDocument().getLength());
 				// outputConsole.repaint();
 			}
 
@@ -431,8 +406,7 @@ public class MainFrame extends JFrame {
 
 								if (_scanner.isOptimized()) {
 									LOGGER.info("Scan for houses...");
-									if (!scanMany("tags/houses.bmp", true)
-											.isEmpty()) {
+									if (!scanMany("tags/houses.bmp", true).isEmpty()) {
 										_mouse.delay(200);
 									}
 									_mouse.savePosition();
@@ -547,8 +521,7 @@ public class MainFrame extends JFrame {
 
 					if (e.getButton() == MouseEvent.BUTTON1) {
 						if (_startPoint == null) {
-							LOGGER.info("clicked once " + e.getButton() + " ("
-									+ e.getX() + ", " + e.getY() + ")");
+							LOGGER.info("clicked once " + e.getButton() + " (" + e.getX() + ", " + e.getY() + ")");
 							_startPoint = e.getPoint();
 							repaint();
 						} else {
@@ -622,8 +595,7 @@ public class MainFrame extends JFrame {
 				// g.drawString("[" + w + ", " + h + "]", w / 2 - 13, h / 2 -
 				// 3);
 				g.setColor(Color.RED);
-				g.drawString(x + ", " + y + ", [" + w + ", " + h + "]", x + 3,
-						y + 13);
+				g.drawString(x + ", " + y + ", [" + w + ", " + h + "]", x + 3, y + 13);
 			}
 		}
 	}
@@ -656,9 +628,8 @@ public class MainFrame extends JFrame {
 
 			captureDialog = new CaptureDialog();
 			if (_scanner.isOptimized()) {
-				captureDialog.setBounds(_scanner.getTopLeft().x,
-						_scanner.getTopLeft().y, _scanner.getGameWidth(),
-						_scanner.getGameHeight());
+				captureDialog.setBounds(_scanner.getTopLeft().x, _scanner.getTopLeft().y, _scanner.getGameWidth(),
+				    _scanner.getGameHeight());
 			} else {
 				captureDialog.setBounds(0, 0, 1679, 1009);
 			}
@@ -667,8 +638,7 @@ public class MainFrame extends JFrame {
 				while (true) {
 					Point loc = MouseInfo.getPointerInfo().getLocation();
 					// LOGGER.info("location: " + loc.x + ", " + loc.y);
-					_mouseInfoLabel
-							.setText("location: " + loc.x + ", " + loc.y);
+					_mouseInfoLabel.setText("location: " + loc.x + ", " + loc.y);
 					_mouse.delay(250, false);
 
 				}
@@ -682,16 +652,14 @@ public class MainFrame extends JFrame {
 
 	}
 
-	private void scanCoins() throws RobotInterruptedException, IOException,
-			AWTException {
+	private void scanCoins() throws RobotInterruptedException, IOException, AWTException {
 		LOGGER.info("Click coins...");
 		_mouse.savePosition();
 		ImageData imageData = _scanner.getImageData("tags/coin.bmp");
 
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		List<Pixel> matches = _matcher
-				.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
@@ -708,15 +676,14 @@ public class MainFrame extends JFrame {
 		LOGGER.info("Done!");
 	}
 
-	private List<Pixel> scanMany(String filename, boolean click)
-			throws RobotInterruptedException, IOException, AWTException {
+	private List<Pixel> scanMany(String filename, boolean click) throws RobotInterruptedException, IOException,
+	    AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
 		if (imageData == null)
 			return new ArrayList<Pixel>(0);
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		List<Pixel> matches = _matcher
-				.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
@@ -727,8 +694,7 @@ public class MainFrame extends JFrame {
 					for (int j = i - 1; j >= 0; --j) {
 						Pixel p1 = matches.get(i);
 						Pixel p2 = matches.get(j);
-						if (Math.abs(p1.x - p2.x) <= 3
-								&& Math.abs(p1.y - p2.y) <= 3) {
+						if (Math.abs(p1.x - p2.x) <= 3 && Math.abs(p1.y - p2.y) <= 3) {
 							// too close to each other
 							// remove one
 							matches.remove(j);
@@ -748,13 +714,11 @@ public class MainFrame extends JFrame {
 		return matches;
 	}
 
-	private List<Pixel> findMany(String filename)
-			throws RobotInterruptedException, IOException, AWTException {
+	private List<Pixel> findMany(String filename) throws RobotInterruptedException, IOException, AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
 		Rectangle area = imageData.getDefaultArea();
 		BufferedImage screen = new Robot().createScreenCapture(area);
-		List<Pixel> matches = _matcher
-				.findMatches(imageData.getImage(), screen);
+		List<Pixel> matches = _matcher.findMatches(imageData.getImage(), screen);
 		if (!matches.isEmpty()) {
 			Collections.sort(matches);
 			Collections.reverse(matches);
@@ -768,8 +732,7 @@ public class MainFrame extends JFrame {
 		return matches;
 	}
 
-	private Pixel scanOne(String filename, boolean click)
-			throws RobotInterruptedException, IOException, AWTException {
+	private Pixel scanOne(String filename, boolean click) throws RobotInterruptedException, IOException, AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
 		if (imageData == null)
 			return null;
@@ -778,8 +741,8 @@ public class MainFrame extends JFrame {
 		return scanOne(filename, area, click);
 	}
 
-	private Pixel scanOne(ImageData imageData, Rectangle area, boolean click)
-			throws AWTException, RobotInterruptedException {
+	private Pixel scanOne(ImageData imageData, Rectangle area, boolean click) throws AWTException,
+	    RobotInterruptedException {
 		BufferedImage screen = new Robot().createScreenCapture(area);
 		Pixel pixel = _matcher.findMatch(imageData.getImage(), screen);
 		if (pixel != null) {
@@ -795,8 +758,8 @@ public class MainFrame extends JFrame {
 
 	}
 
-	private Pixel scanOne(String filename, Rectangle area, boolean click)
-			throws RobotInterruptedException, IOException, AWTException {
+	private Pixel scanOne(String filename, Rectangle area, boolean click) throws RobotInterruptedException, IOException,
+	    AWTException {
 		ImageData imageData = _scanner.getImageData(filename);
 		if (imageData == null)
 			return null;
@@ -815,16 +778,18 @@ public class MainFrame extends JFrame {
 		return pixel;
 	}
 
-	private void registerBuilding(String buildingName) {
+	private Building registerBuilding(String buildingName) {
 		try {
 			Building building = new Building(buildingName);
 			createLabelImageData(building);
 			createPictureImageData(building, "buildings");
 			_buildings.put(buildingName, building);
+			return building;
 		} catch (IOException e) {
 			LOGGER.warning("Failed to register " + buildingName);
 			e.printStackTrace();
 		}
+		return null;
 
 	}
 
@@ -847,7 +812,18 @@ public class MainFrame extends JFrame {
 
 			registerBuilding("Warehouse");
 			registerBuilding("Terminal");
-			registerBuilding("Ranch");
+			Building ranch = registerBuilding("Ranch");
+
+			_protocol = new ProductionProtocol();
+
+			Product milk = new Product("Milk");
+			milk.setPosition(1);
+			milk.setTime(2);
+			milk.setBuilding(ranch);
+			createLabelImageData(milk);
+
+			_protocol.addEntry(milk, 1, 0, 100);
+
 			Pixel p = null;
 
 			if (true) {
@@ -857,8 +833,7 @@ public class MainFrame extends JFrame {
 				// threshold.
 				double oldThreshold = _matcher.getSimilarityThreshold();
 				_matcher.setSimilarityThreshold(.91d);
-				List<Pixel> warehouses = scanMany("buildings/Warehouse.bmp",
-						false);
+				List<Pixel> warehouses = scanMany("buildings/Warehouse.bmp", false);
 				if (!warehouses.isEmpty()) {
 					LOGGER.info("Found at least one warehouse ");
 					// presume one is enough
@@ -916,8 +891,7 @@ public class MainFrame extends JFrame {
 						// skip
 					} else {
 
-						Pixel pp = scanOne(building.getPictureImage(), area,
-								false);
+						Pixel pp = scanOne(building.getPictureImage(), area, false);
 						if (pp != null) {
 							LOGGER.info(building.getName() + ":" + pp);
 							building.setPosition(p);
@@ -1014,14 +988,28 @@ public class MainFrame extends JFrame {
 			if (building.getPosition() != null) {
 				_mouse.click(building.getPosition());
 				_mouse.delay(300);
-				Pixel pp = scanOne(building.getLabelImage(),
-						_scanner.getLabelArea(), false);
+				Pixel pp = scanOne(building.getLabelImage(), _scanner.getLabelArea(), false);
 				if (pp != null) {
-					LOGGER.info("COMMON");
-					Pixel ppp = scanOne(
-							_scanner.getImageData("productionButton.bmp"),
-							_scanner.getPopupArea(), true);
-					LOGGER.info("ppp=" + ppp);
+					LOGGER.info(building.getName());
+					Pixel ppp = scanOne(_scanner.getImageData("productionButton.bmp"), _scanner.getPopupArea(), true);
+					LOGGER.info("production " + ppp);
+					if (ppp != null) {
+						_mouse.delay(500);
+						pp = scanOne(_scanner.getImageData("labels/Ranch2.bmp"), _scanner.getLabelArea(), false);
+						LOGGER.info("pp=" + pp);
+						if (pp != null) {
+							ppp = scanOne(_scanner.getImageData("labels/Production.bmp"),
+							    new Rectangle(pp.x - 10, pp.y - 2, 275, 19), false);
+							// we are on the right place
+							LOGGER.info("I'm pretty sure the production is open");
+							tryProduct(pr);
+						}
+
+					} else {
+						LOGGER.info("Busy. Moving on...");
+						_mouse.click(_scanner.getSafePoint());
+						_mouse.mouseMove(_scanner.getParkingPoint());
+					}
 				}
 
 			}
@@ -1031,6 +1019,23 @@ public class MainFrame extends JFrame {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+
+	}
+
+	private void tryProduct(Product pr) throws AWTException, RobotInterruptedException {
+		Rectangle area = _scanner.getProductionArea3();
+
+		_mouse.click(area.x + 27, area.y + 215);
+		_mouse.click(area.x + 27, area.y + 215);
+		_mouse.click(area.x + 27, area.y + 215);
+		_mouse.click(area.x + 27, area.y + 215);
+		_mouse.click(area.x + 27, area.y + 215);
+
+		int pos = pr.getPosition();
+		if (pos <= 6) {
+			// no need to move
+			scanOne(pr.getLabelImage(), area, true);
 		}
 
 	}
