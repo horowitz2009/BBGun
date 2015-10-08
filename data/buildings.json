@@ -2,33 +2,48 @@
   {
     "_position": {
       "weight": 0,
-      "x": 759,
-      "y": 443
+      "x": 764,
+      "y": 474
     },
     "_relativePosition": {
       "weight": 0,
-      "x": -402,
-      "y": -31
+      "x": -407,
+      "y": -128
     },
-    "_name": "Terminal",
+    "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
+    "_name": "Farm",
     "_labelImage": {
-      "_filename": "labels/Terminal.bmp",
+      "_filename": "labels/Farm.bmp",
       "_defaultArea": {
         "x": 502,
-        "y": 402,
+        "y": 367,
         "width": 380,
         "height": 46
       },
       "_xOff": 0,
       "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 592,
+      "y": 439
     },
-    "_pictureImage": {
-      "_filename": "buildings/Terminal.bmp",
+    "_relativePosition": {
+      "weight": 0,
+      "x": -235,
+      "y": -93
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
+    "_name": "DairyFactory",
+    "_labelImage": {
+      "_filename": "labels/DairyFactory.bmp",
       "_defaultArea": {
-        "x": 327,
-        "y": 331,
-        "width": 698,
-        "height": 601
+        "x": 502,
+        "y": 367,
+        "width": 380,
+        "height": 46
       },
       "_xOff": 0,
       "_yOff": 0
@@ -38,19 +53,20 @@
     "_position": {
       "weight": 0,
       "x": 476,
-      "y": 501
+      "y": 426
     },
     "_relativePosition": {
       "weight": 0,
       "x": -119,
-      "y": -89
+      "y": -80
     },
+    "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
     "_name": "Ranch",
     "_labelImage": {
       "_filename": "labels/Ranch.bmp",
       "_defaultArea": {
         "x": 502,
-        "y": 402,
+        "y": 367,
         "width": 380,
         "height": 46
       },
@@ -61,7 +77,7 @@
       "_filename": "buildings/Ranch.bmp",
       "_defaultArea": {
         "x": 327,
-        "y": 331,
+        "y": 296,
         "width": 698,
         "height": 601
       },
@@ -72,20 +88,82 @@
   {
     "_position": {
       "weight": 0,
+      "x": 762,
+      "y": 378
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -405,
+      "y": -32
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.TerminalMacros",
+    "_name": "Terminal",
+    "_labelImage": {
+      "_filename": "labels/Terminal.bmp",
+      "_defaultArea": {
+        "x": 502,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    },
+    "_pictureImage": {
+      "_filename": "buildings/Terminal.bmp",
+      "_defaultArea": {
+        "x": 327,
+        "y": 296,
+        "width": 698,
+        "height": 601
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 596,
+      "y": 366
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -239,
+      "y": -20
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
+    "_name": "DairyFactory",
+    "_labelImage": {
+      "_filename": "labels/DairyFactory.bmp",
+      "_defaultArea": {
+        "x": 502,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
       "x": 622,
-      "y": 448
+      "y": 382
     },
     "_relativePosition": {
       "weight": 0,
       "x": -265,
       "y": -36
     },
+    "_macrosClass": "com.horowitz.bigbusiness.WarehouseMacros",
     "_name": "Warehouse",
     "_labelImage": {
       "_filename": "labels/Warehouse.bmp",
       "_defaultArea": {
         "x": 502,
-        "y": 402,
+        "y": 367,
         "width": 380,
         "height": 46
       },
@@ -96,7 +174,7 @@
       "_filename": "buildings/Warehouse.bmp",
       "_defaultArea": {
         "x": 327,
-        "y": 331,
+        "y": 296,
         "width": 698,
         "height": 601
       },

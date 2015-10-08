@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.horowitz.bigbusiness.WarehouseMacros;
 import com.horowitz.commons.ImageData;
 import com.horowitz.mickey.Pixel;
 import com.horowitz.mickey.SimilarityImageComparator;
@@ -62,6 +63,23 @@ public class BuildingTest {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Test
+	public void testClone3() {
+	  try {
+	    Building building1 = new Building("Building1");
+	    building1.setMacros(new WarehouseMacros());
+	    
+	    Building building2 = (Building) building1.clone();
+	    assertTrue(building1 != building2);
+	    assertTrue(building1.getMacros() == building2.getMacros());
+        assertTrue(building2.getMacros() != null);	    
+	  } catch (CloneNotSupportedException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	  }
+	  
 	}
 
 	@Test

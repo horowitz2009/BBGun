@@ -40,7 +40,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
-import com.horowitz.bigbusiness.macros.RawMaterials;
+import com.horowitz.bigbusiness.macros.Macros;
+import com.horowitz.bigbusiness.macros.RawMaterialsMacros;
 import com.horowitz.bigbusiness.model.BasicElement;
 import com.horowitz.bigbusiness.model.Building;
 import com.horowitz.bigbusiness.model.Contract;
@@ -55,7 +56,6 @@ import com.horowitz.mickey.MouseRobot;
 import com.horowitz.mickey.MyLogger;
 import com.horowitz.mickey.Pixel;
 import com.horowitz.mickey.RobotInterruptedException;
-import com.horowitz.mickey.SimilarityImageComparator;
 
 public class MainFrame extends JFrame {
 
@@ -80,7 +80,7 @@ public class MainFrame extends JFrame {
   private ProductionProtocol _protocol;
 
   private List<Contract> _contracts;
-  private Map<String, Building> _buildings;
+  private Map<String, Building> _buildingTemplates;
   private List<Building> _buildingLocations;
 
   private TemplateMatcher _matcher;
@@ -625,9 +625,8 @@ public class MainFrame extends JFrame {
   }
 
   private void recalcPositions() {
-    // TODO Auto-generated method stub
     assert _buildingLocations != null;
-    //find the administrative building first
+    // find the administrative building first
     try {
       Pixel admP = scanOne("buildings/Administrative.bmp", null, false);
       if (admP != null) {
@@ -636,10 +635,12 @@ public class MainFrame extends JFrame {
           Pixel rel = building.getRelativePosition();
           Pixel newAbsPos = new Pixel(admP.x - rel.x, admP.y - rel.y);
           building.setPosition(newAbsPos);
-          //for test only
-          _mouse.mouseMove(newAbsPos);
-          LOGGER.info("position of " +building.getName() + " is " + newAbsPos);
-          _mouse.delay(2000);
+          // for test only
+          // _mouse.mouseMove(newAbsPos);
+          // LOGGER.info("position of " +building.getName() + " is " +
+          // newAbsPos);
+          // _mouse.delay(2000);
+
         }
       }
     } catch (IOException e) {
@@ -657,16 +658,13 @@ public class MainFrame extends JFrame {
   private void postDeserialize(List<Building> buildingLocations) {
     try {
       for (Building building : buildingLocations) {
-        
-        building.getLabelImage().postDeserialize(new Object[]{_scanner.getImageComparator()});
-        building.getPictureImage().postDeserialize(new Object[]{_scanner.getImageComparator()});
-        
+        building.postDeserialize(new Object[] { _scanner.getImageComparator() });
       }
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    
+
   }
 
   private void record() {
@@ -829,12 +827,18 @@ public class MainFrame extends JFrame {
     return pixel;
   }
 
-  private Building registerBuilding(String buildingName) {
+  private Building registerBuilding(String buildingName, Macros macros) {
     try {
       Building building = new Building(buildingName);
+      building.setMacros(macros);
       createLabelImageData(building);
-      createPictureImageData(building, "buildings");
-      _buildings.put(buildingName, building);
+
+      try {
+        createPictureImageData(building, "buildings");
+      } catch (Exception e) {
+        LOGGER.warning("Warning: no image for " + buildingName + " in buildings folder");
+      }
+      _buildingTemplates.put(buildingName, building);
       return building;
     } catch (IOException e) {
       LOGGER.warning("Failed to register " + buildingName);
@@ -859,11 +863,15 @@ public class MainFrame extends JFrame {
       LOGGER.info("Locating buildings. Please wait!");
 
       _buildingLocations.clear();
-      _buildings.clear();
+      _buildingTemplates.clear();
 
-      Building ter = registerBuilding("Terminal");
-      Building ranch = registerBuilding("Ranch");
-      ranch.setMacros(new RawMaterials());
+      Building ter = registerBuilding("Terminal", new TerminalMacros());
+      registerBuilding("Farm", new RawMaterialsMacros());
+      registerBuilding("PaperMill", new RawMaterialsMacros());
+      Building ranch = registerBuilding("Ranch", new RawMaterialsMacros());
+
+      registerBuilding("MillingPlant", new FactoryMacros());
+      registerBuilding("DairyFactory", new FactoryMacros());
 
       _protocol = new ProductionProtocol();
 
@@ -883,34 +891,102 @@ public class MainFrame extends JFrame {
       LOGGER.info("idles: " + idles.size());
 
       // merge them all
-      greens.addAll(idles);
+      //greens.addAll(idles);
 
       // Iterate over all registered buildings
       for (int i = 0; i < greens.size(); i++) {
         p = greens.get(i);
-        LOGGER.info("" + p);
-        Rectangle area = new Rectangle(p.x - 27, p.y + 38, 70, 28);
-        Iterator<String> it = _buildings.keySet().iterator();
+        LOGGER.info("Working on " + p);
+        _mouse.mouseMove(p);
+        _mouse.delay(2000);
+        _mouse.checkUserMovement();
+        _mouse.mouseMove(_scanner.getSafePoint());
+        _mouse.delay(500);
+        Rectangle miniArea = new Rectangle(p.x-2-18, p.y-50+37, 44, 60);
+        if (scanOne("tags/coins.bmp", miniArea, false) != null) {
+          //it's a house, skip it
+          LOGGER.info("It's a entertainment.");
+          continue;
+        }
+        //fire or medical
+        boolean fireOrMedical = false;
+        if (scanOne("tags/fire.bmp", miniArea, false) != null) {
+          //it's a house, skip it
+          LOGGER.info("It's a fire.");
+          fireOrMedical= true;
+        }
+        if (scanOne("tags/medical.bmp", miniArea, false) != null) {
+          //it's a house, skip it
+          LOGGER.info("It's a red cross.");
+          fireOrMedical= true;
+        }
+        
+        if (fireOrMedical) {
+          _mouse.click(p);
+          LOGGER.info("waiting 10s");
+          _mouse.delay(10000);
+        }
+        
+        
+        //NOW LET'S HOPE IT'S OK TO CONTINUE
+        
+        _mouse.click(p);
+        _mouse.delay(500);
+        _mouse.checkUserMovement();
+        if (scanOne("labels/HelpNeeded.bmp", _scanner.getLabelArea(), false) != null) {
+          _mouse.click(_scanner.getSafePoint());
+          _mouse.delay(200);
+          _mouse.click(p);
+          _mouse.delay(500);
+          _mouse.checkUserMovement();
+        }
+        
+        //what if it is ready
+        if (scanOne("tags/zzz.bmp", miniArea, false) != null) {
+          LOGGER.info("it's idle now");
+          _mouse.click(p);
+          _mouse.delay(500);
+          _mouse.checkUserMovement();
+        }
+        
+        //what if it is on fire now
+        
+        
+        // Rectangle area = new Rectangle(p.x - 27, p.y + 38, 70, 28);
+        
+        boolean found = false;
+        Iterator<String> it = _buildingTemplates.keySet().iterator();
         while (it.hasNext()) {
           String key = (String) it.next();
-          Building building = _buildings.get(key);
-          Pixel pp = scanOne(building.getPictureImage(), area, false);
+          Building building = _buildingTemplates.get(key);
+          Pixel pp = scanOne(building.getLabelImage(), _scanner.getLabelArea(), false);
           if (pp != null) {
-            LOGGER.info(building.getName() + ":" + pp);
+
+            LOGGER.info("FOUND " + building.getName() + ":" + pp);
+            building = building.copy();
             building.setPosition(p);
             _buildingLocations.add(building);
+            _mouse.click(_scanner.getSafePoint());
+            _mouse.click(_scanner.getSafePoint());
+            _mouse.checkUserMovement();
+
           }
         }
+        _mouse.click(_scanner.getSafePoint());
+        _mouse.click(_scanner.getSafePoint());
+        _mouse.checkUserMovement();
+
       }
 
       // NOW Register buildings having no tags
-      Building war = registerBuilding("Warehouse");
+      Building war = registerBuilding("Warehouse", new WarehouseMacros());
 
       // Warehouse
       // FIREFOX AND CHROME paint differently the warehouse. Reducing the
       // threshold.
       double oldThreshold = _matcher.getSimilarityThreshold();
       _matcher.setSimilarityThreshold(.91d);
+      LOGGER.info("looking for warehouse...");
       Pixel pWar = scanOne(war.getPictureImage(), null, false);
       if (pWar != null) {
         LOGGER.info("Found warehouse ");
@@ -926,28 +1002,31 @@ public class MainFrame extends JFrame {
       // Administrative Building
       // It will be used as anchor. The other buildings' position will be made
       // relative to its position
+      LOGGER.info("looking for Administrative Building...");
       Pixel admP = scanOne("buildings/Administrative.bmp", null, false);
       if (admP != null) {
-        LOGGER.info("Administrative Building: " + admP);
-      }
+        LOGGER.info("FOUND Administrative Building: " + admP);
 
-      for (Building building : _buildingLocations) {
-        if (building.getPosition() != null) {
-          Pixel pos = building.getPosition();
-          int xRelative = admP.x - pos.x;
-          int yRelative = admP.y - pos.y;
-          building.setRelativePosition(new Pixel(xRelative, yRelative));
+        for (Building building : _buildingLocations) {
+          if (building.getPosition() != null) {
+            Pixel pos = building.getPosition();
+            int xRelative = admP.x - pos.x;
+            int yRelative = admP.y - pos.y;
+            building.setRelativePosition(new Pixel(xRelative, yRelative));
+          }
         }
+        LOGGER.info("saving building locations...");
+        new JsonStorage().saveBuildings(_buildingLocations);
+        LOGGER.info("done");
+      } else {
+        LOGGER.info("SORRY. I need the administration building!");
       }
-      
-      new JsonStorage().saveBuildings(_buildingLocations);
-
     } catch (IOException e) {
       e.printStackTrace();
     } catch (AWTException e) {
       e.printStackTrace();
     } catch (RobotInterruptedException e) {
-      e.printStackTrace();
+      LOGGER.info("interrupted");
     } catch (CloneNotSupportedException e) {
       e.printStackTrace();
     }
@@ -969,7 +1048,7 @@ public class MainFrame extends JFrame {
     init();
 
     _contracts = new ArrayList<Contract>();
-    _buildings = new Hashtable<String, Building>();
+    _buildingTemplates = new Hashtable<String, Building>();
     _buildingLocations = new ArrayList<Building>(20);
 
     _matcher = new TemplateMatcher();

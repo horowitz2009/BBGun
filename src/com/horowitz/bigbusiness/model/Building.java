@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.apache.commons.lang.SerializationUtils;
 
-import com.horowitz.bigbusiness.macros.RawMaterials;
+import com.horowitz.bigbusiness.macros.Macros;
 import com.horowitz.mickey.Pixel;
 
 public class Building extends BasicElement implements Cloneable, Serializable {
@@ -12,6 +12,8 @@ public class Building extends BasicElement implements Cloneable, Serializable {
   private static final long serialVersionUID = -2556252202052545991L;
   private Pixel _position;
   private Pixel _relativePosition;
+  private transient Macros _macros;
+  private String _macrosClass;
 
   public Building(String name) {
     super(name);
@@ -41,9 +43,9 @@ public class Building extends BasicElement implements Cloneable, Serializable {
     return (Building) clone();
   }
 
-  public void setMacros(RawMaterials rawMaterials) {
-    // TODO Auto-generated method stub
-
+  public void setMacros(Macros macros) {
+    _macrosClass = macros.getClass().getName();
+    _macros = macros;
   }
 
   public boolean isIdle() {
@@ -58,4 +60,15 @@ public class Building extends BasicElement implements Cloneable, Serializable {
   public void setRelativePosition(Pixel relativePosition) {
     _relativePosition = relativePosition;
   }
+
+  public Macros getMacros() {
+    return _macros;
+  }
+  
+  @Override
+  public void postDeserialize(Object[] transientObjects) throws Exception {
+    super.postDeserialize(transientObjects);
+    System.out.println("mocros class is" +_macrosClass);
+  }
+
 }

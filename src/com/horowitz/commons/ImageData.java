@@ -12,12 +12,13 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import com.horowitz.bigbusiness.model.Deserializable;
 import com.horowitz.mickey.ImageComparator;
 import com.horowitz.mickey.ImageManager;
 import com.horowitz.mickey.Pixel;
 import com.horowitz.mickey.common.MyImageIO;
 
-public class ImageData implements Serializable {
+public class ImageData implements Serializable, Deserializable {
 
   private static final long serialVersionUID = 1665414091139220640L;
 

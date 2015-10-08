@@ -2,6 +2,7 @@ package com.horowitz.bigbusiness.model.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class JsonStorage {
 
     Building[] buildings = _gson.fromJson(json, Building[].class);
 
-    return Arrays.asList(buildings);
+    return new ArrayList<Building>(Arrays.asList(buildings));
   }
 
   public void saveBuildings(List<Building> buildings) throws IOException {
