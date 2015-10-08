@@ -125,7 +125,7 @@ public class ScreenScanner {
 		getImageData("tags/houses.bmp", _scanArea, 0, 9);
 		getImageData("tags/fire.bmp", _scanArea, 0, 7);
 		getImageData("tags/medical.bmp", _scanArea, 14, 9);
-		getImageData("tags/greenDown.bmp", _scanArea, 18, -37);
+		getImageData("tags/greenDown.bmp", _scanArea, 18, -35);
 
 	}
 

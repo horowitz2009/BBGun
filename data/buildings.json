@@ -2,20 +2,45 @@
   {
     "_position": {
       "weight": 0,
-      "x": 764,
-      "y": 474
+      "x": 1015,
+      "y": 620
     },
     "_relativePosition": {
       "weight": 0,
-      "x": -407,
-      "y": -128
+      "x": -500,
+      "y": -273
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
+    "_name": "PaperMill",
+    "_labelImage": {
+      "_filename": "labels/PaperMill.bmp",
+      "_defaultArea": {
+        "x": 622,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 1135,
+      "y": 584
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -620,
+      "y": -237
     },
     "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
     "_name": "Farm",
     "_labelImage": {
       "_filename": "labels/Farm.bmp",
       "_defaultArea": {
-        "x": 502,
+        "x": 622,
         "y": 367,
         "width": 380,
         "height": 46
@@ -27,20 +52,70 @@
   {
     "_position": {
       "weight": 0,
-      "x": 592,
-      "y": 439
+      "x": 1063,
+      "y": 548
     },
     "_relativePosition": {
       "weight": 0,
-      "x": -235,
-      "y": -93
+      "x": -548,
+      "y": -201
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
+    "_name": "Farm",
+    "_labelImage": {
+      "_filename": "labels/Farm.bmp",
+      "_defaultArea": {
+        "x": 622,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 992,
+      "y": 512
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -477,
+      "y": -165
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
+    "_name": "Farm",
+    "_labelImage": {
+      "_filename": "labels/Farm.bmp",
+      "_defaultArea": {
+        "x": 622,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 776,
+      "y": 500
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -261,
+      "y": -153
     },
     "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
-    "_name": "DairyFactory",
+    "_name": "MillingPlant",
     "_labelImage": {
-      "_filename": "labels/DairyFactory.bmp",
+      "_filename": "labels/MillingPlant.bmp",
       "_defaultArea": {
-        "x": 502,
+        "x": 622,
         "y": 367,
         "width": 380,
         "height": 46
@@ -52,20 +127,70 @@
   {
     "_position": {
       "weight": 0,
-      "x": 476,
-      "y": 426
+      "x": 919,
+      "y": 476
     },
     "_relativePosition": {
       "weight": 0,
-      "x": -119,
-      "y": -80
+      "x": -404,
+      "y": -129
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
+    "_name": "MillingPlant",
+    "_labelImage": {
+      "_filename": "labels/MillingPlant.bmp",
+      "_defaultArea": {
+        "x": 622,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 703,
+      "y": 464
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -188,
+      "y": -117
+    },
+    "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
+    "_name": "Confectionery",
+    "_labelImage": {
+      "_filename": "labels/Confectionery.bmp",
+      "_defaultArea": {
+        "x": 622,
+        "y": 367,
+        "width": 380,
+        "height": 46
+      },
+      "_xOff": 0,
+      "_yOff": 0
+    }
+  },
+  {
+    "_position": {
+      "weight": 0,
+      "x": 631,
+      "y": 428
+    },
+    "_relativePosition": {
+      "weight": 0,
+      "x": -116,
+      "y": -81
     },
     "_macrosClass": "com.horowitz.bigbusiness.macros.RawMaterialsMacros",
     "_name": "Ranch",
     "_labelImage": {
       "_filename": "labels/Ranch.bmp",
       "_defaultArea": {
-        "x": 502,
+        "x": 622,
         "y": 367,
         "width": 380,
         "height": 46
@@ -78,7 +203,7 @@
       "_defaultArea": {
         "x": 327,
         "y": 296,
-        "width": 698,
+        "width": 938,
         "height": 601
       },
       "_xOff": 0,
@@ -88,20 +213,20 @@
   {
     "_position": {
       "weight": 0,
-      "x": 762,
-      "y": 378
+      "x": 917,
+      "y": 380
     },
     "_relativePosition": {
       "weight": 0,
-      "x": -405,
-      "y": -32
+      "x": -402,
+      "y": -33
     },
     "_macrosClass": "com.horowitz.bigbusiness.TerminalMacros",
     "_name": "Terminal",
     "_labelImage": {
       "_filename": "labels/Terminal.bmp",
       "_defaultArea": {
-        "x": 502,
+        "x": 622,
         "y": 367,
         "width": 380,
         "height": 46
@@ -114,7 +239,7 @@
       "_defaultArea": {
         "x": 327,
         "y": 296,
-        "width": 698,
+        "width": 938,
         "height": 601
       },
       "_xOff": 0,
@@ -124,33 +249,8 @@
   {
     "_position": {
       "weight": 0,
-      "x": 596,
-      "y": 366
-    },
-    "_relativePosition": {
-      "weight": 0,
-      "x": -239,
-      "y": -20
-    },
-    "_macrosClass": "com.horowitz.bigbusiness.FactoryMacros",
-    "_name": "DairyFactory",
-    "_labelImage": {
-      "_filename": "labels/DairyFactory.bmp",
-      "_defaultArea": {
-        "x": 502,
-        "y": 367,
-        "width": 380,
-        "height": 46
-      },
-      "_xOff": 0,
-      "_yOff": 0
-    }
-  },
-  {
-    "_position": {
-      "weight": 0,
-      "x": 622,
-      "y": 382
+      "x": 780,
+      "y": 383
     },
     "_relativePosition": {
       "weight": 0,
@@ -162,7 +262,7 @@
     "_labelImage": {
       "_filename": "labels/Warehouse.bmp",
       "_defaultArea": {
-        "x": 502,
+        "x": 622,
         "y": 367,
         "width": 380,
         "height": 46
@@ -175,7 +275,7 @@
       "_defaultArea": {
         "x": 327,
         "y": 296,
-        "width": 698,
+        "width": 938,
         "height": 601
       },
       "_xOff": 0,

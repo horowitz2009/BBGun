@@ -54,7 +54,9 @@ public class BasicElement implements Cloneable, Serializable, Deserializable {
 
   @Override
 	  public void postDeserialize(Object[] transientObjects) throws Exception {
-        _labelImage.postDeserialize(transientObjects);
+  	  if (_labelImage != null)
+  		  _labelImage.postDeserialize(transientObjects);
+      if (_pictureImage != null)
         _pictureImage.postDeserialize(transientObjects);
 	  }
 
