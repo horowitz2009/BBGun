@@ -3,17 +3,19 @@ package com.horowitz.bigbusiness.model;
 import java.io.Serializable;
 
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 
 import com.horowitz.bigbusiness.macros.Macros;
 import com.horowitz.mickey.Pixel;
 
-public class Building extends BasicElement implements Cloneable, Serializable {
+public class Building extends BasicElement implements Cloneable, Serializable, Comparable {
 
   private static final long serialVersionUID = -2556252202052545991L;
   private Pixel _position;
   private Pixel _relativePosition;
   private transient Macros _macros;
   private String _macrosClass;
+  private int _level;
 
   public Building(String name) {
     super(name);
@@ -64,11 +66,32 @@ public class Building extends BasicElement implements Cloneable, Serializable {
   public Macros getMacros() {
     return _macros;
   }
-  
+
   @Override
   public void postDeserialize(Object[] transientObjects) throws Exception {
     super.postDeserialize(transientObjects);
-    System.out.println("mocros class is" +_macrosClass);
+    //TODO
+    System.out.println("mocros class is" + _macrosClass);
+    Macros clazz = (Macros) Class.forName(_macrosClass).newInstance();
+    _macros = clazz;
+    if (_macros != null) {
+      _macros.postDeserialize(transientObjects);
+    }
   }
 
+  public void setLevel(int level) {
+    _level = level;
+  }
+
+  public int getLevel() {
+    return _level;
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    int res = super.compareTo(o);
+    if (res == 0)
+      return new CompareToBuilder().append(this._level, ((Building) o)._level).toComparison();
+    return res;
+  }
 }

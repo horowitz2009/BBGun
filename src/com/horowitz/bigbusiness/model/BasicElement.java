@@ -2,9 +2,11 @@ package com.horowitz.bigbusiness.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
+
 import com.horowitz.commons.ImageData;
 
-public class BasicElement implements Cloneable, Serializable, Deserializable {
+public class BasicElement implements Cloneable, Serializable, Deserializable, Comparable {
 
   private static final long serialVersionUID = -1189852183233999384L;
 
@@ -53,11 +55,15 @@ public class BasicElement implements Cloneable, Serializable, Deserializable {
   }
 
   @Override
-	  public void postDeserialize(Object[] transientObjects) throws Exception {
-  	  if (_labelImage != null)
-  		  _labelImage.postDeserialize(transientObjects);
-      if (_pictureImage != null)
-        _pictureImage.postDeserialize(transientObjects);
-	  }
+  public void postDeserialize(Object[] transientObjects) throws Exception {
+    if (_labelImage != null)
+      _labelImage.postDeserialize(transientObjects);
+    if (_pictureImage != null)
+      _pictureImage.postDeserialize(transientObjects);
+  }
+
+  public int compareTo(Object o) {
+    return new CompareToBuilder().append(this._name, ((BasicElement)o)._name).toComparison();
+  }
 
 }

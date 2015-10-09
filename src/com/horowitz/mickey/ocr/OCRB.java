@@ -30,9 +30,11 @@ public class OCRB {
   public OCRB(String prefix, ImageComparator comparator) throws IOException {
     _comparator = comparator;
     _digits = new ArrayList<BufferedImage>(10);
+    
     for (int i = 0; i < 10; i++) {
-      _digits.add(ImageIO.read(ImageManager.getImageURL("ocr/" + prefix + i + ".bmp")));
+      _digits.add(ImageIO.read(ImageManager.getImageURL(prefix + i + ".bmp")));
     }
+    _digits.add(ImageIO.read(ImageManager.getImageURL(prefix + "slash" + ".bmp")));
     _minWidth = Integer.MAX_VALUE;
     _maxWidth = 0;
     _maxHeight = 0;
@@ -96,7 +98,7 @@ public class OCRB {
       if (found.size() == 1) {
         // yahoooo
         Integer m = found.get(0);
-        result += ("" + m);
+        result += ("" + (m < 10 ? m : "/"));
         // cut the chunk and move forward
         if (subimage.getWidth() - _digits.get(m).getWidth() <= 0) {
           // it's over

@@ -1,16 +1,34 @@
 package com.horowitz.bigbusiness.macros;
 
+import java.awt.AWTException;
+import java.io.IOException;
 import java.io.Serializable;
 
-public class Macros implements Serializable {
+import com.horowitz.bigbusiness.ScreenScanner;
+import com.horowitz.bigbusiness.model.Deserializable;
+import com.horowitz.bigbusiness.model.Product;
+import com.horowitz.mickey.MouseRobot;
+import com.horowitz.mickey.RobotInterruptedException;
+
+public abstract class Macros implements Serializable, Deserializable {
 
   private static final long serialVersionUID = -4336238263778301896L;
-  
+
   private String _name;
+  protected transient ScreenScanner _scanner;
+  protected transient MouseRobot _mouse;
+
   
-  public void doTheJob() {
-    //dyra byra
+  public Macros() {
+    super();
+    try {
+      _mouse = new MouseRobot();
+    } catch (AWTException e) {
+      e.printStackTrace();
+    }
   }
+
+  public abstract void doTheJob(Product pr) throws AWTException, IOException, RobotInterruptedException;
 
   public String getName() {
     return _name;
@@ -18,5 +36,12 @@ public class Macros implements Serializable {
 
   public void setName(String name) {
     _name = name;
+
+  }
+
+  @Override
+  public void postDeserialize(Object[] transientObjects) throws Exception {
+    _scanner = (ScreenScanner) transientObjects[1];
+
   }
 }
