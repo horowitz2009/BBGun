@@ -64,12 +64,18 @@ public class ScreenScanner {
   private Rectangle _popupArea;
   private Rectangle _productionArea3;
   private Rectangle _productionArea2;
+  private Rectangle _warehouseArea;;
   private int _labelWidth;
 
   public ScreenScanner(Settings settings) {
     _settings = settings;
     _comparator = new SimilarityImageComparator(0.04, 2000);
     _matcher = new TemplateMatcher();
+    try {
+      _mouse = new MouseRobot();
+    } catch (AWTException e1) {
+      e1.printStackTrace();
+    }
     _gameLocator = new GameLocator();
     _imageDataCache = new Hashtable<String, ImageData>();
 
@@ -93,12 +99,12 @@ public class ScreenScanner {
     int xx;
     int yy;
 
-    _scanArea = new Rectangle(_tl.x + 327, _tl.y, getGameWidth() - 327 - 360, getGameHeight());
+    _scanArea = new Rectangle(_tl.x + 100, _tl.y, getGameWidth() - 100 - 135, getGameHeight());
 
     // label area
     _labelWidth = 380;
     xx = (getGameWidth() - _labelWidth) / 2;
-    _labelArea = new Rectangle(_tl.x + xx, _tl.y + 71, _labelWidth, 46);
+    _labelArea = new Rectangle(_tl.x + xx, _tl.y + 71, _labelWidth, 66);
     _levelArea = new Rectangle(_tl.x + xx, _tl.y + 360, _labelWidth, 35);
 
     xx = (getGameWidth() - 608) / 2;
@@ -110,7 +116,15 @@ public class ScreenScanner {
     // _popupArea = new Rectangle(_tl.x + xx, _tl.y + 122, 608, 392);
     _productionArea3 = new Rectangle(_tl.x + xx, _tl.y + yy, 924, 450);
 
-    _safePoint = new Pixel(0, _tl.y + getGameHeight() / 2);
+    xx = (getGameWidth() - 662) / 2;
+    yy = (getGameHeight() - 450) / 2;
+    _productionArea2 = new Rectangle(_tl.x + xx, _tl.y + yy, 662, 450);
+
+    xx = (getGameWidth() - 833) / 2;
+    yy = (getGameHeight() - 453) / 2;
+    _warehouseArea = new Rectangle(_tl.x + xx, _tl.y + yy, 833, 453);
+
+    _safePoint = new Pixel(_tl.x + 1, _tl.y + getGameHeight() / 2);
     _parkingPoint = new Pixel(_safePoint);
 
     // HOORAY
@@ -146,6 +160,10 @@ public class ScreenScanner {
 
   public Rectangle getProductionArea2() {
     return _productionArea2;
+  }
+  
+  public Rectangle getWarehouseArea() {
+    return _warehouseArea;
   }
 
   public Rectangle getScanArea() {
@@ -516,6 +534,19 @@ public class ScreenScanner {
 
   public void setMatcher(TemplateMatcher matcher) {
     _matcher = matcher;
+  }
+
+  public MouseRobot getMouse() {
+    return _mouse;
+  }
+
+  public void reduceThreshold() {
+    _matcher.setSimilarityThreshold(.85d);
+  }
+
+  public void restoreThreshold() {
+    _matcher.setSimilarityThreshold(.95d);
+    
   }
 
 }

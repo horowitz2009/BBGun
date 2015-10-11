@@ -64,7 +64,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger(MainFrame.class.getName());
 
-  private static final String APP_TITLE = "BB Gun v0.001";
+  private static final String APP_TITLE = "BB Gun v0.006";
 
   private Settings _settings;
   private MouseRobot _mouse;
@@ -125,8 +125,8 @@ public class MainFrame extends JFrame {
     setAlwaysOnTop(true);
 
     _settings = Settings.createSettings("bbgun.properties");
-    _mouse = new MouseRobot();
     _scanner = new ScreenScanner(_settings);
+    _mouse = _scanner.getMouse();
 
     JPanel rootPanel = new JPanel(new BorderLayout());
     getContentPane().add(rootPanel, BorderLayout.CENTER);
@@ -241,7 +241,11 @@ public class MainFrame extends JFrame {
           Thread myThread = new Thread(new Runnable() {
             @Override
             public void run() {
-              scan();
+              try {
+                scan();
+              } catch (RobotInterruptedException e) {
+                e.printStackTrace();
+              }
             }
           });
 
@@ -259,7 +263,11 @@ public class MainFrame extends JFrame {
             public void run() {
               LOGGER.info("Let's get rolling...");
               if (!_scanner.isOptimized()) {
-                scan();
+                try {
+                  scan();
+                } catch (RobotInterruptedException e) {
+                  e.printStackTrace();
+                }
               }
 
               if (_scanner.isOptimized()) {
@@ -471,7 +479,9 @@ public class MainFrame extends JFrame {
               } catch (Exception e) {
                 LOGGER.log(Level.WARNING, e.getMessage());
                 e.printStackTrace();
-
+              } catch (RobotInterruptedException e) {
+                LOGGER.info("interrupted");
+                e.printStackTrace();
               }
             }
           });
@@ -504,6 +514,9 @@ public class MainFrame extends JFrame {
                 LOGGER.log(Level.WARNING, e.getMessage());
                 e.printStackTrace();
 
+              } catch (RobotInterruptedException e) {
+                LOGGER.info("interrupted");
+                e.printStackTrace();
               }
             }
           });
@@ -638,7 +651,7 @@ public class MainFrame extends JFrame {
     }
   }
 
-  private void scan() {
+  private void scan() throws RobotInterruptedException {
     try {
       LOGGER.info("Scanning...");
       setTitle(APP_TITLE + " ...");
@@ -647,11 +660,10 @@ public class MainFrame extends JFrame {
 
         LOGGER.info("GAME FOUND! BB GUN READY.");
         // fixTheGame();
+        _protocol = new ProductionProtocol();
         _buildingLocations = new JsonStorage().loadBuildings();
         postDeserialize(_buildingLocations);
         recalcPositions(false);
-
-        _protocol = new ProductionProtocol();
 
         Product milk = new Product("Milk");
         milk.setPosition(1);
@@ -659,8 +671,25 @@ public class MainFrame extends JFrame {
         milk.setBuildingName("Ranch");
         milk.setLevelRequired(1);
         createLabelImageData(milk);
-
-        _protocol.addEntry(milk, 1, 0, 100);
+        _protocol.addEntry(milk, 1, 2, 8);
+        {
+          Product grain = new Product("Grain");
+          createLabelImageData(grain);
+          grain.setPosition(1);
+          grain.setTime(2);
+          grain.setBuildingName("Farm");
+          grain.setLevelRequired(1);
+          _protocol.addEntry(grain, 1, 3, 6);
+        }
+        {
+          Product product = new Product("Polyethylene");
+          createLabelImageData(product);
+          product.setPosition(1);
+          product.setTime(2);
+          product.setBuildingName("PaperMill");
+          product.setLevelRequired(1);
+          _protocol.addEntry(product, 1, 4, 8);
+        }
 
         setTitle(APP_TITLE + " READY");
       } else {
@@ -670,14 +699,11 @@ public class MainFrame extends JFrame {
     } catch (Exception e1) {
       LOGGER.log(Level.WARNING, e1.getMessage());
       e1.printStackTrace();
-    } catch (RobotInterruptedException e) {
-      LOGGER.log(Level.SEVERE, "Interrupted by user", e);
-      e.printStackTrace();
     }
 
   }
 
-  private void recalcPositions(boolean click) {
+  private void recalcPositions(boolean click) throws RobotInterruptedException {
     assert _buildingLocations != null;
     // find the administrative building first
     try {
@@ -701,13 +727,8 @@ public class MainFrame extends JFrame {
         }
       }
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (AWTException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (RobotInterruptedException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -715,7 +736,7 @@ public class MainFrame extends JFrame {
   private void postDeserialize(List<Building> buildingLocations) {
     try {
       for (Building building : buildingLocations) {
-        building.postDeserialize(new Object[] { _scanner.getImageComparator(), _scanner });
+        building.postDeserialize(new Object[] { _scanner.getImageComparator(), _scanner, _protocol });
       }
     } catch (Exception e) {
       // TODO Auto-generated catch block
@@ -819,16 +840,17 @@ public class MainFrame extends JFrame {
 
   }
 
-  private Building getBuilding(String name, int levelRequired) {
+  private List<Building> getBuildingLocations(String name, int levelRequired) {
+    List<Building> result = new ArrayList<>();
     for (Building b : _buildingLocations) {
       if (b.getName().equals(name) && b.getLevel() >= levelRequired) {
-        return b;
+        result.add(b);
       }
     }
-    return null;
+    return result;
   }
 
-  private void testBuildings() {
+  private void testBuildings() throws RobotInterruptedException {
     recalcPositions(true);
   }
 
@@ -880,6 +902,8 @@ public class MainFrame extends JFrame {
         // found first
         Building warehouse = war.copy();// is it necessary to clone?
         warehouse.setPosition(pWar);
+        warehouse.setLevel(1);
+        warehouse.setMacros(new WarehouseMacros());
         _buildingLocations.add(warehouse);
       }
       // restore the threshold
@@ -941,7 +965,7 @@ public class MainFrame extends JFrame {
       }
 
       // fire med
-      preprocessBuilding(p, miniArea);
+      preprocessBuilding(p, miniArea, null);
 
       Iterator<String> it = _buildingTemplates.keySet().iterator();
       while (it.hasNext()) {
@@ -977,8 +1001,8 @@ public class MainFrame extends JFrame {
     }
   }
 
-  private boolean preprocessBuilding(Pixel p, Rectangle miniArea) throws RobotInterruptedException, IOException,
-      AWTException {
+  private boolean preprocessBuilding(Pixel p, Rectangle miniArea, Product pr) throws RobotInterruptedException,
+      IOException, AWTException {
     // fire or medical
     boolean fireOrMedical = false;
     if (_scanner.scanOne("tags/fire.bmp", miniArea, false) != null) {
@@ -994,9 +1018,11 @@ public class MainFrame extends JFrame {
 
     if (fireOrMedical) {
       _mouse.click(p);
-      LOGGER.info("waiting 10s");
-      _mouse.mouseMove(_scanner.getSafePoint());
-      _mouse.delay(10000);
+      // wait 10seconds or moveing forward???
+      // LOGGER.info("waiting 10s");
+      // _mouse.mouseMove(_scanner.getSafePoint());
+      // _mouse.delay(10000);
+      return false;
     }
 
     // THE CLICK
@@ -1016,22 +1042,23 @@ public class MainFrame extends JFrame {
       _mouse.checkUserMovement();
     }
 
-    // TODO check is warehouse full
+    boolean weregood = true;
+
+    // check is warehouse full
     Rectangle attentionArea = new Rectangle(_scanner.getLabelArea());
-    attentionArea.y += (224 - attentionArea.y);
-    p = _scanner.scanOne("Attention.bmp", attentionArea, false);
-    if (p != null) {
-      attentionArea.y += (320 - attentionArea.y);
-      p = _scanner.scanOne("toWarehouse.bmp", attentionArea, false);
-      if (p != null) {
-        // do the warehouse macros
-        // if ok. return true
-        return false;
+    attentionArea.y += (_scanner.getTopLeft().y + 224 - attentionArea.y);
+    Pixel pp = _scanner.scanOne("Attention.bmp", attentionArea, false);
+    if (pp != null) {
+      attentionArea.y += (_scanner.getTopLeft().y + 320 - attentionArea.y);
+      pp = _scanner.scanOne("toWarehouse.bmp", attentionArea, true);
+      if (pp != null) {
+        System.err.println("dowarehouse");
+        weregood = doWarehouse(pr);
       }
     }
 
     // what if it is ready
-    if (_scanner.scanOne("tags/zzz.bmp", miniArea, false) != null) {
+    if (weregood && _scanner.scanOne("tags/zzz.bmp", miniArea, false) != null) {
       LOGGER.info("it's idle now");
       _mouse.click(p);
       _mouse.delay(30);
@@ -1039,7 +1066,35 @@ public class MainFrame extends JFrame {
       _mouse.delay(300);
       _mouse.checkUserMovement();
     }
-    return true;
+    return weregood;
+  }
+
+  /**
+   * 
+   * @param pr
+   * @return true if warehouse has been successfully emptied
+   * @throws AWTException
+   * @throws RobotInterruptedException
+   * @throws IOException
+   */
+  private boolean doWarehouse(Product pr) throws AWTException, RobotInterruptedException, IOException {
+    List<Building> warehouses = getBuildingLocations("Warehouse", 1);
+    Building building = warehouses.get(0);// TODO improve it later
+    if (pr == null) {
+      _mouse.click(building.getPosition());
+      _mouse.delay(500);
+      Pixel pp = _scanner.scanOne(building.getLabelImage(), _scanner.getLabelArea(), false);
+
+      if (pp != null) {
+        LOGGER.info(building.getName());
+        Pixel ppp = _scanner.scanOne(_scanner.getImageData("labels/warehouse/toWarehouseButton2.bmp"),
+            _scanner.getPopupArea(), true);
+        if (ppp != null) {
+          _mouse.delay(500);
+        }
+      }
+    }
+    return building.getMacros().doTheJob(pr);
   }
 
   private Rectangle generateMiniArea(Pixel p) {
@@ -1075,44 +1130,57 @@ public class MainFrame extends JFrame {
   private void doMagic() {
     assert _scanner.isOptimized();
     setTitle(APP_TITLE + " RUNNING");
-
+    _stopAllThreads = false;
     try {
       do {
-        BufferedImage screen = new Robot().createScreenCapture(_scanner.getScanArea());
-        LOGGER.info("Coins...");
-        _mouse.saveCurrentPosition();
-        _scanner.scanMany("tags/coins.bmp", screen, true);
-        _mouse.checkUserMovement();
+        _mouse.click(_scanner.getSafePoint());
+        _mouse.click(_scanner.getSafePoint());
         _mouse.click(_scanner.getSafePoint());
         _mouse.delay(200);
-        Pixel p = _scanner.scanOne("populationRed.bmp", null, false);
-        if (p != null) {
-          LOGGER.info("Population full...");
-        } else {
-          _mouse.delay(1500);
-          _scanner.scanMany("tags/houses.bmp", screen, true);
+        recalcPositions(false);
+        
+        if (true) {
+          BufferedImage screen = new Robot().createScreenCapture(_scanner.getScanArea());
+          LOGGER.info("Coins...");
+          _mouse.saveCurrentPosition();
+          _scanner.scanMany("tags/coins.bmp", screen, true);
+          _mouse.checkUserMovement();
           _mouse.click(_scanner.getSafePoint());
-          _mouse.delay(1300);
+          _mouse.delay(200);
+          Pixel p = _scanner.scanOne("populationRed.bmp", null, false);
+          if (p != null) {
+            LOGGER.info("Population full...");
+          } else {
+            LOGGER.info("Houses...");
+            _mouse.delay(1500);
+            _scanner.scanMany("tags/houses.bmp", screen, true);
+            _mouse.click(_scanner.getSafePoint());
+            _mouse.delay(1300);
+          }
+          LOGGER.info("Med...");
+          p = _scanner.scanOne("tags/medical.bmp", null, true);
+          if (p == null) {
+            LOGGER.info("Fire...");
+            p = _scanner.scanOne("tags/fire.bmp", null, true);
+          }
+          if (p != null) {
+            LOGGER.info("...");
+            _mouse.delay(1500);
+          }
         }
-        LOGGER.info("Med...");
-        p = _scanner.scanOne("tags/medical.bmp", null, true);
-        if (p == null) {
-          LOGGER.info("Fire...");
-          p = _scanner.scanOne("tags/fire.bmp", null, true);
-        }
-        if (p != null) {
-          LOGGER.info("...");
-          _mouse.delay(1500);
-        }
+        doTerminal();
 
-        if (_protocol != null) {
+        if (true && _protocol != null) {
           List<Entry> entries = _protocol.getEntries();
           for (Entry entry : entries) {
             doEntry(entry);
+            _mouse.delay(1000);
+
           }
         }
+        // doWarehouse(false);
 
-      } while (true);
+      } while (!_stopAllThreads);
 
     } catch (IOException e) {
       // TODO Auto-generated catch block
@@ -1125,46 +1193,111 @@ public class MainFrame extends JFrame {
       setTitle(APP_TITLE);
       // e.printStackTrace();
     }
+  }
 
+  private void rescan() {
+    // TODO Auto-generated method stub
+
+  }
+
+  private void doTerminal() throws RobotInterruptedException {
+    try {
+      List<Building> buildings = getBuildingLocations("Terminal", 1);
+      if (!buildings.isEmpty()) {
+        for (Building building : buildings) {
+          int t = 0;
+          Pixel p = null;
+          do {
+            Pixel bp = building.getPosition();
+            _mouse.click(bp);
+            t++;
+            _mouse.delay(50);
+            p = _scanner.scanOne("labels/Terminal.bmp", _scanner.getLabelArea(), false);
+            if (p == null) {
+              p = _scanner.scanOne("tags/zzz.bmp", generateMiniArea(bp), false);
+              if (p != null) {
+                _mouse.click(bp);
+                _mouse.delay(50);
+              }
+            }
+            System.err.println("trying " + t);
+          } while (p != null && t < building.getLevel());
+
+          p = _scanner.scanOne("labels/Terminal.bmp", _scanner.getLabelArea(), false);
+          if (p != null) {
+            LOGGER.info(building.getName());
+
+            Pixel ppp = _scanner.scanOne(_scanner.getImageData("toTripButton.bmp"), _scanner.getPopupArea(), true);
+            if (ppp != null) {
+              _mouse.delay(500);
+              building.getMacros().doTheJob(null);
+
+            } else {
+              LOGGER.info("Busy. Moving on...");
+              _mouse.click(_scanner.getSafePoint());
+              _mouse.mouseMove(_scanner.getParkingPoint());
+            }
+
+          }
+
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (AWTException e) {
+      e.printStackTrace();
+    }
   }
 
   private void doEntry(Entry entry) throws RobotInterruptedException {
     Product pr = entry.product;
     String buildingName = pr.getBuildingName();
-    Building building = getBuilding(buildingName, pr.getLevelRequired());
-
-    try {
-      if (building != null && building.getPosition() != null) {
-        Pixel p = building.getPosition();
-        Rectangle miniArea = generateMiniArea(p);
-
-        preprocessBuilding(p, miniArea);
-
-        Pixel pp = _scanner.scanOne(building.getLabelImage(), _scanner.getLabelArea(), false);
-        if (pp != null) {
-          LOGGER.info(building.getName());
-
-          Pixel ppp = _scanner.scanOne(_scanner.getImageData("productionButton.bmp"), _scanner.getPopupArea(), true);
-          if (ppp != null) {
-            _mouse.delay(500);
-            building.getMacros().doTheJob(pr);
-
-          } else {
-            LOGGER.info("Busy. Moving on...");
+    List<Building> buildings = getBuildingLocations(buildingName, pr.getLevelRequired());
+    for (Building building : buildings) {
+      try {
+        if (building != null && building.getPosition() != null) {
+          Pixel p = building.getPosition();
+          if (p != null) {
+            Rectangle miniArea = generateMiniArea(p);
             _mouse.click(_scanner.getSafePoint());
-            _mouse.mouseMove(_scanner.getParkingPoint());
+            _mouse.click(_scanner.getSafePoint());
+            _mouse.click(_scanner.getSafePoint());
+            _mouse.click(_scanner.getSafePoint());
+
+            if (preprocessBuilding(p, miniArea, pr)) {
+
+              Pixel pp = _scanner.scanOne(building.getLabelImage(), _scanner.getLabelArea(), false);
+              if (pp != null) {
+                LOGGER.info(building.getName());
+
+                Pixel ppp = _scanner.scanOne(_scanner.getImageData("productionButton.bmp"), _scanner.getPopupArea(),
+                    true);
+                if (ppp != null) {
+                  _mouse.delay(500);
+                  building.getMacros().doTheJob(pr);
+
+                } else {
+                  LOGGER.info("Busy. Moving on...");
+                  _mouse.click(_scanner.getSafePoint());
+                  _mouse.mouseMove(_scanner.getParkingPoint());
+                }
+              }
+            } else {
+              LOGGER.info("Preprocess error! Moving on...");
+              _mouse.click(_scanner.getSafePoint());
+              _mouse.mouseMove(_scanner.getParkingPoint());
+            }
           }
         }
-
+        _mouse.delay(2000);
+      } catch (AWTException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
-    } catch (AWTException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+
     }
-
   }
-
 }

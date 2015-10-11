@@ -16,6 +16,14 @@ public abstract class Macros implements Serializable, Deserializable {
 
   private String _name;
   protected transient ScreenScanner _scanner;
+  public ScreenScanner getScanner() {
+    return _scanner;
+  }
+
+  public void setScanner(ScreenScanner scanner) {
+    _scanner = scanner;
+  }
+
   protected transient MouseRobot _mouse;
 
   
@@ -28,7 +36,7 @@ public abstract class Macros implements Serializable, Deserializable {
     }
   }
 
-  public abstract void doTheJob(Product pr) throws AWTException, IOException, RobotInterruptedException;
+  public abstract boolean doTheJob(Product pr) throws AWTException, IOException, RobotInterruptedException;
 
   public String getName() {
     return _name;
