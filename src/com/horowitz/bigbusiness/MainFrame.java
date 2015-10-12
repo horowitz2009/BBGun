@@ -18,7 +18,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -87,6 +89,8 @@ public class MainFrame extends JFrame {
   private TemplateMatcher _matcher;
   private OCRB _ocrbLevel;
   private OCRB _ocrbWarehouse;
+
+  private JTextField _timeTF;
 
   public static void main(String[] args) {
 
@@ -165,11 +169,13 @@ public class MainFrame extends JFrame {
 
     JToolBar mainToolbar1 = createToolbar1();
     JToolBar mainToolbar2 = createToolbar2();
+    JToolBar mainToolbar3 = createToolbar3();
     mainToolbar2.setFloatable(false);
 
     JPanel toolbars = new JPanel(new GridLayout(9, 1));
     toolbars.add(mainToolbar1);
     toolbars.add(mainToolbar2);
+    toolbars.add(mainToolbar3);
 
     Box north = Box.createVerticalBox();
     north.add(toolbars);
@@ -491,7 +497,7 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
-    // SCAN
+    // TEST
     {
       AbstractAction action = new AbstractAction("Test") {
         public void actionPerformed(ActionEvent e) {
@@ -526,10 +532,108 @@ public class MainFrame extends JFrame {
       };
       mainToolbar1.add(action);
     }
+    // FAST FORWARD
+    {
+      AbstractAction action = new AbstractAction("+15min") {
+        public void actionPerformed(ActionEvent e) {
+          Thread myThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              changeTime(15);
+            }
 
+          });
+          
+          myThread.start();
+        }
+      };
+      mainToolbar1.add(action);
+    }
+
+    // FAST FORWARD
+    {
+      AbstractAction action = new AbstractAction("-15min") {
+        public void actionPerformed(ActionEvent e) {
+          Thread myThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              changeTime(-15);
+            }
+            
+          });
+          
+          myThread.start();
+        }
+      };
+      mainToolbar1.add(action);
+    }
+    
     return mainToolbar1;
   }
 
+  @SuppressWarnings("serial")
+  private JToolBar createToolbar3() {
+    JToolBar mainToolbar1 = new JToolBar();
+    mainToolbar1.setFloatable(false);
+    
+    // SCAN
+    {
+      _timeTF = new JTextField(10);
+      mainToolbar1.add(_timeTF);
+    }
+    
+    // FAST FORWARD
+    {
+      AbstractAction action = new AbstractAction("++") {
+        public void actionPerformed(ActionEvent e) {
+          Thread myThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                String s = _timeTF.getText();
+                int n = Integer.parseInt(s);
+                changeTime(n);
+              } catch (NumberFormatException e) {
+                LOGGER.info("Not a number!");
+              }
+
+            }
+            
+          });
+          
+          myThread.start();
+        }
+      };
+      mainToolbar1.add(action);
+    }
+    
+    // REWIND
+    {
+      AbstractAction action = new AbstractAction("--") {
+        public void actionPerformed(ActionEvent e) {
+          Thread myThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+              try {
+                String s = _timeTF.getText();
+                int n = Integer.parseInt(s);
+                changeTime(-n);
+              } catch (NumberFormatException e) {
+                LOGGER.info("Not a number!");
+              }
+            }
+            
+          });
+          
+          myThread.start();
+        }
+      };
+      mainToolbar1.add(action);
+    }
+    
+    return mainToolbar1;
+  }
+  
   private void setupLogger() {
     try {
       MyLogger.setup();
@@ -707,7 +811,7 @@ public class MainFrame extends JFrame {
     assert _buildingLocations != null;
     // find the administrative building first
     try {
-      Pixel admP = _scanner.scanOne("buildings/Administrative.bmp", null, false);
+      Pixel admP = _scanner.findAdminOffice();
       if (admP != null) {
         LOGGER.info("Administrative Building: " + admP);
         for (Building building : _buildingLocations) {
@@ -913,7 +1017,7 @@ public class MainFrame extends JFrame {
       // It will be used as anchor. The other buildings' position will be made
       // relative to its position
       LOGGER.info("looking for Administrative Building...");
-      Pixel admP = _scanner.scanOne("buildings/Administrative.bmp", null, false);
+      Pixel admP = _scanner.findAdminOffice();
       if (admP != null) {
         LOGGER.info("FOUND Administrative Building: " + admP);
 
@@ -1139,6 +1243,11 @@ public class MainFrame extends JFrame {
         _mouse.delay(200);
         recalcPositions(false);
         
+        
+        //1. TERMINAL
+        doTerminal();
+        
+        //2. COINS, HOUSES, FIRE and MED
         if (true) {
           BufferedImage screen = new Robot().createScreenCapture(_scanner.getScanArea());
           LOGGER.info("Coins...");
@@ -1158,17 +1267,17 @@ public class MainFrame extends JFrame {
             _mouse.delay(1300);
           }
           LOGGER.info("Med...");
-          p = _scanner.scanOne("tags/medical.bmp", null, true);
+          p = _scanner.scanOneFast("tags/medical.bmp", null, true);
           if (p == null) {
             LOGGER.info("Fire...");
-            p = _scanner.scanOne("tags/fire.bmp", null, true);
+            p = _scanner.scanOneFast("tags/fire.bmp", null, true);
           }
           if (p != null) {
             LOGGER.info("...");
             _mouse.delay(1500);
           }
         }
-        doTerminal();
+        
 
         if (true && _protocol != null) {
           List<Entry> entries = _protocol.getEntries();
@@ -1300,4 +1409,19 @@ public class MainFrame extends JFrame {
 
     }
   }
+  
+  private void changeTime(int minutes) {
+    // TODO Auto-generated method stub
+    //Runtime.getRuntime().exec("cmd /C date " + strDateToSet); // dd-MM-yy
+    Calendar cal = Calendar.getInstance();
+    cal.add(Calendar.MINUTE, minutes);
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    try {
+      Runtime.getRuntime().exec("cmd /C time " + sdf.format(cal.getTime())); // hh:mm:ss
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
 }

@@ -143,7 +143,7 @@ public class ScreenScanner {
     getImageData("tags/medical.bmp", _scanArea, 14, 9);
     getImageData("tags/greenDown.bmp", _scanArea, 18, -35);
     getImageData("buildings/Warehouse.bmp", _scanArea, 35, 0);
-    
+
     area = new Rectangle(_br.x - 264, _tl.y, 264, 35);
     getImageData("populationRed.bmp", area, 0, 0);
     getImageData("populationBlue.bmp", area, 0, 0);
@@ -161,7 +161,7 @@ public class ScreenScanner {
   public Rectangle getProductionArea2() {
     return _productionArea2;
   }
-  
+
   public Rectangle getWarehouseArea() {
     return _warehouseArea;
   }
@@ -209,6 +209,16 @@ public class ScreenScanner {
       _br = new Pixel(1600, 1000);
     }
     return false;
+  }
+
+  public Pixel findAdminOffice() throws IOException, AWTException, RobotInterruptedException {
+    Rectangle area = new Rectangle(_tl.x + 304, _tl.y, 160, 120);
+
+    Pixel p = scanOneFast("buildings/Administrative.bmp", area, false);
+    writeImage(area, "admArea1.png");
+    if (p == null)
+      p = scanOneFast("buildings/Administrative.bmp", getScanArea(), false);
+    return p;
   }
 
   public void writeImage(Rectangle rect, String filename) {
@@ -435,14 +445,14 @@ public class ScreenScanner {
   public Rectangle getLevelArea() {
     return _levelArea;
   }
-  
+
   public ImageComparator getImageComparator() {
     return _comparator;
   }
 
   public List<Pixel> scanMany(String filename, BufferedImage screen, boolean click) throws RobotInterruptedException,
       IOException, AWTException {
-  
+
     ImageData imageData = getImageData(filename);
     if (imageData == null)
       return new ArrayList<Pixel>(0);
@@ -460,7 +470,7 @@ public class ScreenScanner {
     if (!matches.isEmpty()) {
       Collections.sort(matches);
       Collections.reverse(matches);
-  
+
       // filter similar
       if (matches.size() > 1) {
         for (int i = matches.size() - 1; i > 0; --i) {
@@ -476,7 +486,7 @@ public class ScreenScanner {
           }
         }
       }
-  
+
       for (Pixel pixel : matches) {
         pixel.x += (area.x + imageData.get_xOff());
         pixel.y += (area.y + imageData.get_yOff());
@@ -503,7 +513,7 @@ public class ScreenScanner {
       }
     }
     return pixel;
-  
+
   }
 
   public Pixel scanOne(String filename, Rectangle area, boolean click) throws RobotInterruptedException, IOException,
@@ -513,7 +523,7 @@ public class ScreenScanner {
       return null;
     if (area == null)
       area = imageData.getDefaultArea();
-  
+
     BufferedImage screen = new Robot().createScreenCapture(area);
     Pixel pixel = _matcher.findMatch(imageData.getImage(), screen);
     if (pixel != null) {
@@ -528,6 +538,47 @@ public class ScreenScanner {
     return pixel;
   }
 
+  public Pixel scanOneFast(ImageData imageData, Rectangle area, boolean click) throws AWTException,
+  RobotInterruptedException {
+    if (area == null) {
+      area = imageData.getDefaultArea();
+    }
+    BufferedImage screen = new Robot().createScreenCapture(area);
+    Pixel pixel = _comparator.findImage(imageData.getImage(), screen);
+    if (pixel != null) {
+      pixel.x += (area.x + imageData.get_xOff());
+      pixel.y += (area.y + imageData.get_yOff());
+      LOGGER.info("found: " + pixel);
+      if (click) {
+        _mouse.click(pixel.x, pixel.y);
+      }
+    }
+    return pixel;
+    
+  }
+  
+  public Pixel scanOneFast(String filename, Rectangle area, boolean click) throws RobotInterruptedException, IOException,
+  AWTException {
+    ImageData imageData = getImageData(filename);
+    if (imageData == null)
+      return null;
+    if (area == null)
+      area = imageData.getDefaultArea();
+    
+    BufferedImage screen = new Robot().createScreenCapture(area);
+    Pixel pixel = _comparator.findImage(imageData.getImage(), screen);
+    if (pixel != null) {
+      pixel.x += (area.x + imageData.get_xOff());
+      pixel.y += (area.y + imageData.get_yOff());
+      LOGGER.info("found: " + pixel);
+      if (click) {
+        _mouse.click(pixel.x, pixel.y);
+        _mouse.delay(100);
+      }
+    }
+    return pixel;
+  }
+  
   public TemplateMatcher getMatcher() {
     return _matcher;
   }
@@ -546,7 +597,7 @@ public class ScreenScanner {
 
   public void restoreThreshold() {
     _matcher.setSimilarityThreshold(.95d);
-    
+
   }
 
 }
