@@ -66,7 +66,7 @@ public class MainFrame extends JFrame {
 
   private final static Logger LOGGER = Logger.getLogger(MainFrame.class.getName());
 
-  private static final String APP_TITLE = "BB Gun v0.006";
+  private static final String APP_TITLE = "BB Gun v0.007";
 
   private Settings _settings;
   private MouseRobot _mouse;
@@ -1415,8 +1415,10 @@ public class MainFrame extends JFrame {
     //Runtime.getRuntime().exec("cmd /C date " + strDateToSet); // dd-MM-yy
     Calendar cal = Calendar.getInstance();
     cal.add(Calendar.MINUTE, minutes);
+    SimpleDateFormat sdfDate = new SimpleDateFormat("dd-MM-yy");
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
     try {
+      Runtime.getRuntime().exec("cmd /C date " + sdfDate.format(cal.getTime())); // dd:mm:yy
       Runtime.getRuntime().exec("cmd /C time " + sdf.format(cal.getTime())); // hh:mm:ss
     } catch (IOException e) {
       // TODO Auto-generated catch block
